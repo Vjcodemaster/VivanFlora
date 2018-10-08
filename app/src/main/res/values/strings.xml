@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Vivan Flora</string>
+    <string name="autochip_india">Autochip India</string>
+    <string name="login">Login</string>
+    <string name="prompt_id">User ID</string>
+    <string name="prompt_password">Password</string>
+    <string name="create_order">Create Order</string>
+    <string name="view_order">View Order</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
