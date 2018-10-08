@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="horizontal"
     android:background="@android:color/white"
+    android:orientation="horizontal"
     tools:context=".CreateOrderFragment">
 
     <!--<Spinner
@@ -19,25 +19,67 @@
         android:textColorHint="@color/colorAccent" />-->
 
     <ScrollView
-        android:layout_width="match_parent"
         android:id="@+id/sv_parent_insurance"
+        android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <HorizontalScrollView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fillViewport="true"
-            android:measureAllChildren="false"
-            android:scrollbars="none">
+            android:gravity="end"
+            android:orientation="vertical">
 
-            <TableLayout
-                android:id="@+id/tl_products"
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fillViewport="true"
+                android:measureAllChildren="false"
+                android:scrollbars="none">
+
+                <TableLayout
+                    android:id="@+id/tl_products"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent">
+
+                </TableLayout>
+
+            </HorizontalScrollView>
+
+
+            <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent">
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp">
 
-            </TableLayout>
+                <Button
+                    android:id="@+id/btn_confirm"
+                    style="@style/Widget.AppCompat.Button.Borderless.Colored"
+                    android:layout_width="wrap_content"
+                    android:layout_height="25dp"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginBottom="2dp"
+                    android:background="@drawable/cornered_button"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:text="Confirm"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textColor="@android:color/white" />
 
-        </HorizontalScrollView>
+                <Button
+                    android:id="@+id/btn_cancel"
+                    style="@style/Widget.AppCompat.Button.Borderless.Colored"
+                    android:layout_width="wrap_content"
+                    android:layout_height="25dp"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="2dp"
+                    android:background="@drawable/cornered_button"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:text="Cancel"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textColor="@android:color/white" />
+            </LinearLayout>
+        </LinearLayout>
     </ScrollView>
 
 

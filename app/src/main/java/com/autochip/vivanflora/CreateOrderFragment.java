@@ -13,6 +13,8 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import java.util.zip.Inflater;
+
 import app_utility.OnFragmentInteractionListener;
 
 
@@ -37,8 +39,10 @@ public class CreateOrderFragment extends Fragment {
     TableLayout tlProducts;
     TableRow[] rows;
     TableRow row;
+    TableRow trHeading;
 
-    Button[] btnDelete;
+    Button btnConfirm, btnCancel;
+    Button[] baButtonDelete;
     FloatingActionButton fabCreateOrder;
     int rowLength = 0;
 
@@ -78,15 +82,15 @@ public class CreateOrderFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_create_order, container, false);
-        tlProducts = view.findViewById(R.id.tl_products);
 
-        TableRow trHeading = (TableRow) inflater.inflate(R.layout.table_row_heading, null);
-
+        init(view, inflater);
+        int count = tlProducts.getChildCount();
         row = (TableRow) getLayoutInflater().inflate(R.layout.table_row, null);
+        //rows[count] = row;
         tlProducts.addView(trHeading);
         tlProducts.addView(row);
 
-        fabCreateOrder = view.findViewById(R.id.fab_create_order);
+
         fabCreateOrder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -95,10 +99,39 @@ public class CreateOrderFragment extends Fragment {
                 TextView tvSlNo = row.getChildAt(0).findViewById(R.id.tv_sl_no);
                 tvSlNo.setText(String.valueOf(count));
                 tlProducts.addView(row);
+                //rows[count] = row;
             }
         });
 
+        /*for(int i=0; i<rows.length; i++){
+            baButtonDelete[i] = row.findViewById(R.id.btn_table_row_delete);
+            final int finalI = i;
+            baButtonDelete[finalI].setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    row = rows[finalI];
+                    //rows[finalI].removeAllViews();
+                    tlProducts.removeView(row);
+                }
+            });
+        }*/
+
+
+
         return view;
+    }
+
+    void init(View view, LayoutInflater inflater){
+        //rows = new TableRow[10];
+        //baButtonDelete = new Button[10];
+
+        btnConfirm = view.findViewById(R.id.btn_confirm);
+        btnCancel = view.findViewById(R.id.btn_cancel);
+
+        tlProducts = view.findViewById(R.id.tl_products);
+        trHeading = (TableRow) inflater.inflate(R.layout.table_row_heading, null);
+
+        fabCreateOrder = view.findViewById(R.id.fab_create_order);
     }
 
     @Override
