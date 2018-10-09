@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.zip.Inflater;
 
@@ -42,6 +43,7 @@ public class CreateOrderFragment extends Fragment {
     TableRow trHeading;
 
     Button btnConfirm, btnCancel;
+    Button btnDelete;
     Button[] baButtonDelete;
     FloatingActionButton fabCreateOrder;
     int rowLength = 0;
@@ -83,26 +85,62 @@ public class CreateOrderFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_create_order, container, false);
 
+        rows = new TableRow[11];
+        baButtonDelete = new Button[11];
         init(view, inflater);
-        int count = tlProducts.getChildCount();
+        final int count = tlProducts.getChildCount();
         row = (TableRow) getLayoutInflater().inflate(R.layout.table_row, null);
-        //rows[count] = row;
+        btnDelete = row.findViewById(R.id.btn_table_row_delete);
         tlProducts.addView(trHeading);
         tlProducts.addView(row);
+        baButtonDelete[count] = btnDelete;
+        rows[count] = row;
+
+        btnDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                rows[count].removeAllViews();
+                tlProducts.removeView(row);
+            }
+        });
 
 
         fabCreateOrder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int count = tlProducts.getChildCount();
-                row = (TableRow) getLayoutInflater().inflate(R.layout.table_row, null);
-                TextView tvSlNo = row.getChildAt(0).findViewById(R.id.tv_sl_no);
-                tvSlNo.setText(String.valueOf(count));
-                tlProducts.addView(row);
-                //rows[count] = row;
+                final int count = tlProducts.getChildCount();
+                if (count != rows.length) {
+                    row = (TableRow) getLayoutInflater().inflate(R.layout.table_row, null);
+                    TextView tvSlNo = row.getChildAt(0).findViewById(R.id.tv_sl_no);
+                    tvSlNo.setText(String.valueOf(count));
+                    btnDelete = row.findViewById(R.id.btn_table_row_delete);
+                    tlProducts.addView(row);
+                    baButtonDelete[count] = btnDelete;
+                    btnDelete.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            rows[count].removeAllViews();
+                            //tlProducts.removeView(row);
+                            tlProducts.removeViewAt(count);
+                        }
+                    });
+                    rows[count] = row;
+                } else
+                    Toast.makeText(getActivity(), "Maximum 10 products allowed", Toast.LENGTH_LONG).show();
             }
         });
 
+        /*for (int i=0; i<baButtonDelete.length-1; i++){
+            final int finalI = i;
+            baButtonDelete[i].setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    row = rows[finalI];
+                    rows[finalI].removeAllViews();
+                    tlProducts.removeView(row);
+                }
+            });
+        }*/
         /*for(int i=0; i<rows.length; i++){
             baButtonDelete[i] = row.findViewById(R.id.btn_table_row_delete);
             final int finalI = i;
@@ -117,11 +155,10 @@ public class CreateOrderFragment extends Fragment {
         }*/
 
 
-
         return view;
     }
 
-    void init(View view, LayoutInflater inflater){
+    void init(View view, LayoutInflater inflater) {
         //rows = new TableRow[10];
         //baButtonDelete = new Button[10];
 
