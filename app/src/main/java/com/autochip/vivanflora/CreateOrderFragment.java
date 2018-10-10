@@ -1,7 +1,7 @@
 package com.autochip.vivanflora;
 
 import android.content.Context;
-import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -14,7 +14,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.zip.Inflater;
+import java.util.ArrayList;
 
 import app_utility.OnFragmentInteractionListener;
 
@@ -22,7 +22,7 @@ import app_utility.OnFragmentInteractionListener;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link app_utility.OnFragmentInteractionListener} interface
+ * {@link OnFragmentInteractionListener} interface
  * to handle interaction events.
  * Use the {@link CreateOrderFragment#newInstance} factory method to
  * create an instance of this fragment.
@@ -45,6 +45,7 @@ public class CreateOrderFragment extends Fragment {
     Button btnConfirm, btnCancel;
     Button btnDelete;
     Button[] baButtonDelete;
+    ArrayList<TextView> alSlNoTextView = new ArrayList<>();
     FloatingActionButton fabCreateOrder;
     int rowLength = 0;
 
@@ -95,6 +96,8 @@ public class CreateOrderFragment extends Fragment {
         tlProducts.addView(row);
         baButtonDelete[count] = btnDelete;
         rows[count] = row;
+        TextView tvSlNo = row.findViewById(R.id.tv_sl_no);
+        alSlNoTextView.add(tvSlNo);
 
         btnDelete.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -116,15 +119,30 @@ public class CreateOrderFragment extends Fragment {
                     btnDelete = row.findViewById(R.id.btn_table_row_delete);
                     tlProducts.addView(row);
                     baButtonDelete[count] = btnDelete;
+                    rows[count] = row;
+                    alSlNoTextView.add(tvSlNo);
                     btnDelete.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
                             rows[count].removeAllViews();
                             //tlProducts.removeView(row);
                             tlProducts.removeViewAt(count);
+                            alSlNoTextView.remove(count-1);
+                            final TextView[] tv = new TextView[1];
+                            final String[] sText = new String[1];
+                            AsyncTask.execute(new Runnable() {
+                                @Override
+                                public void run() {
+                                    for (int i=0 ; i<alSlNoTextView.size(); i++){
+                                        tv[0] = alSlNoTextView.get(i);
+                                        sText[0] = String.valueOf(i+1);
+                                        tv[0].setText(sText[0]);
+                                    }
+                                }
+                            });
                         }
                     });
-                    rows[count] = row;
+
                 } else
                     Toast.makeText(getActivity(), "Maximum 10 products allowed", Toast.LENGTH_LONG).show();
             }
