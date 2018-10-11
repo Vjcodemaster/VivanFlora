@@ -1,5 +1,6 @@
 package com.autochip.vivanflora;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -38,16 +39,14 @@ public class CreateOrderFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
 
     TableLayout tlProducts;
-    TableRow[] rows;
+    //TableRow[] rows;
     TableRow row;
     TableRow trHeading;
 
     Button btnConfirm, btnCancel;
     Button btnDelete;
-    Button[] baButtonDelete;
     ArrayList<TextView> alSlNoTextView = new ArrayList<>();
     FloatingActionButton fabCreateOrder;
-    int rowLength = 0;
 
     public CreateOrderFragment() {
         // Required empty public constructor
@@ -86,92 +85,17 @@ public class CreateOrderFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_create_order, container, false);
 
-        rows = new TableRow[11];
-        baButtonDelete = new Button[11];
         init(view, inflater);
-        final int count = tlProducts.getChildCount();
-        row = (TableRow) getLayoutInflater().inflate(R.layout.table_row, null);
-        btnDelete = row.findViewById(R.id.btn_table_row_delete);
-        tlProducts.addView(trHeading);
-        tlProducts.addView(row);
-        baButtonDelete[count] = btnDelete;
-        rows[count] = row;
-        TextView tvSlNo = row.findViewById(R.id.tv_sl_no);
-        alSlNoTextView.add(tvSlNo);
-
-        btnDelete.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                rows[count].removeAllViews();
-                tlProducts.removeView(row);
-            }
-        });
-
-
+        handleRow();
         fabCreateOrder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                final int count = tlProducts.getChildCount();
-                if (count != rows.length) {
-                    row = (TableRow) getLayoutInflater().inflate(R.layout.table_row, null);
-                    TextView tvSlNo = row.getChildAt(0).findViewById(R.id.tv_sl_no);
-                    tvSlNo.setText(String.valueOf(count));
-                    btnDelete = row.findViewById(R.id.btn_table_row_delete);
-                    tlProducts.addView(row);
-                    baButtonDelete[count] = btnDelete;
-                    rows[count] = row;
-                    alSlNoTextView.add(tvSlNo);
-                    btnDelete.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            rows[count].removeAllViews();
-                            //tlProducts.removeView(row);
-                            tlProducts.removeViewAt(count);
-                            alSlNoTextView.remove(count-1);
-                            final TextView[] tv = new TextView[1];
-                            final String[] sText = new String[1];
-                            AsyncTask.execute(new Runnable() {
-                                @Override
-                                public void run() {
-                                    for (int i=0 ; i<alSlNoTextView.size(); i++){
-                                        tv[0] = alSlNoTextView.get(i);
-                                        sText[0] = String.valueOf(i+1);
-                                        tv[0].setText(sText[0]);
-                                    }
-                                }
-                            });
-                        }
-                    });
-
+                if (alSlNoTextView.size() != 30) {
+                    handleRow();
                 } else
-                    Toast.makeText(getActivity(), "Maximum 10 products allowed", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(), "Maximum 30 products allowed, please create new quotation", Toast.LENGTH_LONG).show();
             }
         });
-
-        /*for (int i=0; i<baButtonDelete.length-1; i++){
-            final int finalI = i;
-            baButtonDelete[i].setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    row = rows[finalI];
-                    rows[finalI].removeAllViews();
-                    tlProducts.removeView(row);
-                }
-            });
-        }*/
-        /*for(int i=0; i<rows.length; i++){
-            baButtonDelete[i] = row.findViewById(R.id.btn_table_row_delete);
-            final int finalI = i;
-            baButtonDelete[finalI].setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    row = rows[finalI];
-                    //rows[finalI].removeAllViews();
-                    tlProducts.removeView(row);
-                }
-            });
-        }*/
-
 
         return view;
     }
@@ -189,6 +113,33 @@ public class CreateOrderFragment extends Fragment {
         fabCreateOrder = view.findViewById(R.id.fab_create_order);
     }
 
+    void handleRow() {
+        row = (TableRow) getLayoutInflater().inflate(R.layout.table_row, null);
+        btnDelete = row.findViewById(R.id.btn_table_row_delete);
+        if (tlProducts.getChildCount() == 0)
+            tlProducts.addView(trHeading, 0);
+
+        TextView tvSlNo = row.findViewById(R.id.tv_sl_no_value);
+        alSlNoTextView.add(tvSlNo);
+        tvSlNo.setText(String.valueOf(alSlNoTextView.size()));
+
+        tlProducts.addView(row);
+
+        btnDelete = row.findViewById(R.id.btn_table_row_delete);
+        btnDelete.setTag(alSlNoTextView.size());
+        btnDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                row = (TableRow) view.getParent();
+                TextView tv = row.findViewById(R.id.tv_sl_no_value);
+                alSlNoTextView.remove(tv);
+                tlProducts.removeView(row);
+                new updateSerialNoAsync().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
+        });
+        //new updateSerialNoAsync().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -197,6 +148,27 @@ public class CreateOrderFragment extends Fragment {
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    private class updateSerialNoAsync extends AsyncTask<String, String, String> {
+
+        @Override
+        protected String doInBackground(String... params) {
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            TextView tv;
+            String sText;
+
+            for (int i = 0; i < alSlNoTextView.size(); i++) {
+                tv = alSlNoTextView.get(i);
+                sText = String.valueOf(i + 1);
+                tv.setText(sText);
+            }
         }
     }
 
