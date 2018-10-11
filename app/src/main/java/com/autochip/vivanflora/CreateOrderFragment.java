@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -47,6 +48,7 @@ public class CreateOrderFragment extends Fragment {
     Button btnDelete;
     ArrayList<TextView> alSlNoTextView = new ArrayList<>();
     FloatingActionButton fabCreateOrder;
+    ScrollView scrollView;
 
     public CreateOrderFragment() {
         // Required empty public constructor
@@ -111,6 +113,8 @@ public class CreateOrderFragment extends Fragment {
         trHeading = (TableRow) inflater.inflate(R.layout.table_row_heading, null);
 
         fabCreateOrder = view.findViewById(R.id.fab_create_order);
+        scrollView = view.findViewById(R.id.sv_create_order);
+        scrollView.setSmoothScrollingEnabled(true);
     }
 
     void handleRow() {
@@ -124,6 +128,8 @@ public class CreateOrderFragment extends Fragment {
         tvSlNo.setText(String.valueOf(alSlNoTextView.size()));
 
         tlProducts.addView(row);
+        if (alSlNoTextView.size() > 10)
+            scrollView.fullScroll(View.FOCUS_DOWN);
 
         btnDelete = row.findViewById(R.id.btn_table_row_delete);
         btnDelete.setTag(alSlNoTextView.size());
@@ -153,7 +159,6 @@ public class CreateOrderFragment extends Fragment {
 
     @SuppressLint("StaticFieldLeak")
     private class updateSerialNoAsync extends AsyncTask<String, String, String> {
-
         @Override
         protected String doInBackground(String... params) {
             return null;
