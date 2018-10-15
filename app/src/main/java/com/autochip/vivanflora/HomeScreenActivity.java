@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewAnimationUtils;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,6 +24,7 @@ public class HomeScreenActivity extends AppCompatActivity implements OnFragmentI
     int nDisplayOffSetD3;
 
     TextView tvTitle;
+    ImageButton ibBackButton;
     public static OnFragmentInteractionListener onFragmentInteractionListener;
     Fragment newFragment;
     FragmentTransaction transaction;
@@ -36,6 +38,14 @@ public class HomeScreenActivity extends AppCompatActivity implements OnFragmentI
         setContentView(R.layout.activity_home_screen);
         onFragmentInteractionListener = this;
         tvTitle = findViewById(R.id.tv_title);
+        ibBackButton = findViewById(R.id.ib_back_button);
+
+        ibBackButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
     }
 
     public void onClickOrderButton(View view) {
@@ -47,61 +57,60 @@ public class HomeScreenActivity extends AppCompatActivity implements OnFragmentI
                 bundle.putInt("index", 0);*/
                 newFragment = new MyOrdersFragment();
                 //newFragment.setArguments(bundle);
-
                 sBackStackParent = newFragment.getClass().getName();
-                transaction = getSupportFragmentManager().beginTransaction();
-                transaction.setCustomAnimations(R.anim.t2b, R.anim.b2t);
-                transaction.replace(R.id.fl_container, newFragment, sBackStackParent);
-                transaction.addToBackStack(null);
-                transaction.commit();
-
                 viewAnimate = findViewById(R.id.btn_my_orders);
-                show(viewAnimate, findViewById(R.id.fl_container));
                 tvTitle.setText(R.string.my_orders);
                 break;
             case R.id.btn_catalogue:
                 newFragment = new CatalogueFragment();
                 //newFragment.setArguments(bundle);
                 sBackStackParent = newFragment.getClass().getName();
-                transaction = getSupportFragmentManager().beginTransaction();
+                /*transaction = getSupportFragmentManager().beginTransaction();
                 transaction.setCustomAnimations(R.anim.t2b, R.anim.b2t);
                 transaction.replace(R.id.fl_container, newFragment, sBackStackParent);
                 transaction.addToBackStack(null);
-                transaction.commit();
+                transaction.commit();*/
 
                 viewAnimate = findViewById(R.id.btn_catalogue);
-                show(viewAnimate, findViewById(R.id.fl_container));
+                //show(viewAnimate, findViewById(R.id.fl_container));
                 tvTitle.setText(R.string.catalogue);
                 break;
             case R.id.btn_dashboard:
                 newFragment = new DashboardFragment();
                 //newFragment.setArguments(bundle);
                 sBackStackParent = newFragment.getClass().getName();
-                transaction = getSupportFragmentManager().beginTransaction();
+                /*transaction = getSupportFragmentManager().beginTransaction();
                 transaction.setCustomAnimations(R.anim.t2b, R.anim.b2t);
                 transaction.replace(R.id.fl_container, newFragment, sBackStackParent);
                 transaction.addToBackStack(null);
-                transaction.commit();
+                transaction.commit();*/
 
                 viewAnimate = findViewById(R.id.btn_dashboard);
-                show(viewAnimate, findViewById(R.id.fl_container));
+                //show(viewAnimate, findViewById(R.id.fl_container));
                 tvTitle.setText(R.string.dashboard);
                 break;
             case R.id.btn_settings:
                 newFragment = new SettingsFragment();
                 //newFragment.setArguments(bundle);
                 sBackStackParent = newFragment.getClass().getName();
-                transaction = getSupportFragmentManager().beginTransaction();
+                /*transaction = getSupportFragmentManager().beginTransaction();
                 transaction.setCustomAnimations(R.anim.t2b, R.anim.b2t);
                 transaction.replace(R.id.fl_container, newFragment, sBackStackParent);
                 transaction.addToBackStack(null);
-                transaction.commit();
+                transaction.commit();*/
 
                 viewAnimate = findViewById(R.id.btn_settings);
-                show(viewAnimate, findViewById(R.id.fl_container));
+                //show(viewAnimate, findViewById(R.id.fl_container));
                 tvTitle.setText(R.string.settings);
                 break;
         }
+        transaction = getSupportFragmentManager().beginTransaction();
+        transaction.setCustomAnimations(R.anim.t2b, R.anim.b2t);
+        transaction.replace(R.id.fl_container, newFragment, sBackStackParent);
+        transaction.addToBackStack(null);
+        transaction.commit();
+        show(viewAnimate, findViewById(R.id.fl_container));
+        ibBackButton.setVisibility(View.VISIBLE);
     }
 
     public void changeTitleTo(int nCase, String sCase) {
@@ -210,6 +219,7 @@ public class HomeScreenActivity extends AppCompatActivity implements OnFragmentI
             //Toast.makeText(HomeScreenActivity.this,saTag[0],  Toast.LENGTH_SHORT).show();
         } else if(size==0){
             tvTitle.setText(R.string.app_name);
+            ibBackButton.setVisibility(View.GONE);
         }
 
     }

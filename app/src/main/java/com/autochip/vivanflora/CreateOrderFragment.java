@@ -1,6 +1,7 @@
 package com.autochip.vivanflora;
 
 import android.annotation.SuppressLint;
+import android.app.DatePickerDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -10,13 +11,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 import app_utility.OnFragmentInteractionListener;
 
@@ -44,11 +50,13 @@ public class CreateOrderFragment extends Fragment {
     TableRow row;
     TableRow trHeading;
 
-    Button btnConfirm, btnCancel;
+    Button btnPlaceOrder, btnSaveOrder;
+    TextView tvDate;
     Button btnDelete;
     ArrayList<TextView> alSlNoTextView = new ArrayList<>();
     FloatingActionButton fabCreateOrder;
     ScrollView scrollView;
+    private final Calendar myCalendar = Calendar.getInstance();
 
     public CreateOrderFragment() {
         // Required empty public constructor
@@ -105,9 +113,37 @@ public class CreateOrderFragment extends Fragment {
     void init(View view, LayoutInflater inflater) {
         //rows = new TableRow[10];
         //baButtonDelete = new Button[10];
+        tvDate = view.findViewById(R.id.tv_date);
+        Date date = new Date();
+        String modifiedDate= new SimpleDateFormat("dd-MM-yyyy", Locale.US).format(date);
+        tvDate.setText(modifiedDate);
 
-        btnConfirm = view.findViewById(R.id.btn_confirm);
-        btnCancel = view.findViewById(R.id.btn_cancel);
+        tvDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                DatePickerDialog.OnDateSetListener date = new DatePickerDialog.OnDateSetListener() {
+
+                    @Override
+                    public void onDateSet(DatePicker view, int year, int monthOfYear,
+                                          int dayOfMonth) {
+                        myCalendar.set(Calendar.YEAR, year);
+                        myCalendar.set(Calendar.MONTH, monthOfYear);
+                        myCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                        String myFormat = "dd/MM/yyyy"; //In which you need put here
+                        SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
+                        tvDate.setText(sdf.format(myCalendar.getTime()));
+                    }
+
+                };
+                DatePickerDialog dialog = new DatePickerDialog(getActivity(), date,
+                        myCalendar.get(Calendar.YEAR), myCalendar.get(Calendar.MONTH),
+                        myCalendar.get(Calendar.DAY_OF_MONTH));
+                dialog.show();
+            }
+        });
+
+        btnSaveOrder = view.findViewById(R.id.btn_save_order);
+        btnPlaceOrder = view.findViewById(R.id.btn_place_order);
 
         tlProducts = view.findViewById(R.id.tl_products);
         trHeading = (TableRow) inflater.inflate(R.layout.table_row_heading, null);
