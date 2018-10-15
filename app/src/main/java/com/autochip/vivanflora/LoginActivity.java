@@ -25,6 +25,7 @@ public class LoginActivity extends AppCompatActivity {
                 String sUserID = etUserID.getEditText().getText().toString();
                 Intent in = new Intent(LoginActivity.this, HomeScreenActivity.class);
                 startActivity(in);
+                finish();
             }
         });
         ////7894561230

@@ -1,6 +1,7 @@
 package com.autochip.vivanflora;
 
 import android.animation.Animator;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -10,6 +11,7 @@ import android.view.View;
 import android.view.ViewAnimationUtils;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import app_utility.OnFragmentInteractionListener;
 
@@ -21,20 +23,22 @@ public class HomeScreenActivity extends AppCompatActivity implements OnFragmentI
     int nDisplayOffSetD3;
 
     TextView tvTitle;
+    public static OnFragmentInteractionListener onFragmentInteractionListener;
+    Fragment newFragment;
+    FragmentTransaction transaction;
+    String sBackStackParent;
+
+    View viewAnimate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_screen);
+        onFragmentInteractionListener = this;
         tvTitle = findViewById(R.id.tv_title);
     }
 
     public void onClickOrderButton(View view) {
-        Fragment newFragment;
-        FragmentTransaction transaction;
-        View viewAnimate;
-
-        //String sBackStackParent;
 
         switch (view.getId()) {
             case R.id.btn_my_orders:
@@ -44,10 +48,10 @@ public class HomeScreenActivity extends AppCompatActivity implements OnFragmentI
                 newFragment = new MyOrdersFragment();
                 //newFragment.setArguments(bundle);
 
-                //sBackStackParent = newFragment.getClass().getName();
+                sBackStackParent = newFragment.getClass().getName();
                 transaction = getSupportFragmentManager().beginTransaction();
                 transaction.setCustomAnimations(R.anim.t2b, R.anim.b2t);
-                transaction.replace(R.id.fl_container, newFragment, null);
+                transaction.replace(R.id.fl_container, newFragment, sBackStackParent);
                 transaction.addToBackStack(null);
                 transaction.commit();
 
@@ -58,10 +62,10 @@ public class HomeScreenActivity extends AppCompatActivity implements OnFragmentI
             case R.id.btn_catalogue:
                 newFragment = new CatalogueFragment();
                 //newFragment.setArguments(bundle);
-                //sBackStackParent = newFragment.getClass().getName();
+                sBackStackParent = newFragment.getClass().getName();
                 transaction = getSupportFragmentManager().beginTransaction();
                 transaction.setCustomAnimations(R.anim.t2b, R.anim.b2t);
-                transaction.replace(R.id.fl_container, newFragment, null);
+                transaction.replace(R.id.fl_container, newFragment, sBackStackParent);
                 transaction.addToBackStack(null);
                 transaction.commit();
 
@@ -72,10 +76,10 @@ public class HomeScreenActivity extends AppCompatActivity implements OnFragmentI
             case R.id.btn_dashboard:
                 newFragment = new DashboardFragment();
                 //newFragment.setArguments(bundle);
-                //sBackStackParent = newFragment.getClass().getName();
+                sBackStackParent = newFragment.getClass().getName();
                 transaction = getSupportFragmentManager().beginTransaction();
                 transaction.setCustomAnimations(R.anim.t2b, R.anim.b2t);
-                transaction.replace(R.id.fl_container, newFragment, null);
+                transaction.replace(R.id.fl_container, newFragment, sBackStackParent);
                 transaction.addToBackStack(null);
                 transaction.commit();
 
@@ -86,10 +90,10 @@ public class HomeScreenActivity extends AppCompatActivity implements OnFragmentI
             case R.id.btn_settings:
                 newFragment = new SettingsFragment();
                 //newFragment.setArguments(bundle);
-                //sBackStackParent = newFragment.getClass().getName();
+                sBackStackParent = newFragment.getClass().getName();
                 transaction = getSupportFragmentManager().beginTransaction();
                 transaction.setCustomAnimations(R.anim.t2b, R.anim.b2t);
-                transaction.replace(R.id.fl_container, newFragment, null);
+                transaction.replace(R.id.fl_container, newFragment, sBackStackParent);
                 transaction.addToBackStack(null);
                 transaction.commit();
 
@@ -113,6 +117,9 @@ public class HomeScreenActivity extends AppCompatActivity implements OnFragmentI
                 break;
             case 4:
                 tvTitle.setText(R.string.settings);
+                break;
+            case 5:
+                tvTitle.setText(R.string.create_order);
                 break;
             default:
                 tvTitle.setText(R.string.app_name);
@@ -156,9 +163,61 @@ public class HomeScreenActivity extends AppCompatActivity implements OnFragmentI
 
     @Override
     public void onFragmentMessage(String sCase, int nFlag) {
+        switch (sCase) {
+            case "MY_ORDER_FAB_CLICK":
+                newFragment = new CreateOrderFragment();
+                //newFragment.setArguments(bundle);
+                sBackStackParent = newFragment.getClass().getName();
+                transaction = getSupportFragmentManager().beginTransaction();
+                //transaction.setCustomAnimations(R.anim.b2t, R.anim.t2b);
+                transaction.replace(R.id.fl_container, newFragment, sBackStackParent);
+                transaction.addToBackStack(null);
+                transaction.commit();
 
+                viewAnimate = findViewById(R.id.fab_create_order);
+                show(viewAnimate, findViewById(R.id.fl_container));
+                changeTitleTo(5, "");
+                break;
+        }
     }
 
+    private void backPressed(){
+        String[] saTag;
+        int size = getSupportFragmentManager().getBackStackEntryCount();
+        if (size >= 1) {
+            Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fl_container);
+            saTag = currentFragment.getTag().replace(".", ",").split(",");
+            switch (saTag[3]) {
+                case "MyOrdersFragment":
+                    changeTitleTo(1, "");
+                    break;
+                case "CatalogueFragment":
+                    changeTitleTo(2, "");
+                    break;
+                case "DashboardFragment":
+                    changeTitleTo(3, "");
+                    break;
+                case "SettingFragment":
+                    changeTitleTo(4, "");
+                    break;
+                case "CreateOrderFragment":
+                    changeTitleTo(5, "");
+                    break;
+                default:
+                    changeTitleTo(0, "");
+                    break;
+            }
+            //Toast.makeText(HomeScreenActivity.this,saTag[0],  Toast.LENGTH_SHORT).show();
+        } else if(size==0){
+            tvTitle.setText(R.string.app_name);
+        }
+
+    }
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        backPressed();
+    }
     /*switch (view.getId()) {
         case R.id.btn_create_order:
 

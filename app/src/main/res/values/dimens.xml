@@ -11,4 +11,9 @@
     <dimen name="activity_image_height">100dp</dimen>
 
     <dimen name="layout_margin_top_large">30dp</dimen>
+
+    <dimen name="drawable_arrow_width">2.5dp</dimen>
+    <dimen name="drawable_arrow_height">50.5dp</dimen>
+    <dimen name="drawable_arrow_bottom">20dp</dimen>
+    <dimen name="drawable_arrow_radius">1dp</dimen>
 </resources>
