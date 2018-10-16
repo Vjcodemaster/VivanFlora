@@ -5,14 +5,18 @@ import android.app.DatePickerDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -56,6 +60,7 @@ public class CreateOrderFragment extends Fragment {
     ArrayList<TextView> alSlNoTextView = new ArrayList<>();
     FloatingActionButton fabCreateOrder;
     ScrollView scrollView;
+    Spinner spinner;
     private final Calendar myCalendar = Calendar.getInstance();
 
     public CreateOrderFragment() {
@@ -151,6 +156,7 @@ public class CreateOrderFragment extends Fragment {
         fabCreateOrder = view.findViewById(R.id.fab_create_order);
         scrollView = view.findViewById(R.id.sv_create_order);
         scrollView.setSmoothScrollingEnabled(true);
+
     }
 
     void handleRow() {
@@ -167,6 +173,8 @@ public class CreateOrderFragment extends Fragment {
         if (alSlNoTextView.size() > 10)
             scrollView.fullScroll(View.FOCUS_DOWN);
 
+
+
         btnDelete = row.findViewById(R.id.btn_table_row_delete);
         btnDelete.setTag(alSlNoTextView.size());
         btnDelete.setOnClickListener(new View.OnClickListener() {
@@ -179,6 +187,16 @@ public class CreateOrderFragment extends Fragment {
                 new updateSerialNoAsync().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }
         });
+
+        ArrayList<String> alMake = new ArrayList<>();
+        alMake.add("Gerbera");
+        alMake.add("Red Rose");
+        alMake.add("Sun flower");
+        alMake.add("Casa Blanca");
+        spinner = row.findViewById(R.id.spinner_product);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_row, R.id.tv_products, alMake); //android.R.layout.simple_spinner_item
+        //adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
+        spinner.setAdapter(adapter);
         //new updateSerialNoAsync().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 

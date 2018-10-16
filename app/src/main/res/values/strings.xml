@@ -12,7 +12,7 @@
     <string name="dashboard">Dashboard</string>
     <string name="settings">Settings</string>
 
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="hello_blank_fragment">Coming soon</string>
 
     <!-- related to Create Order Fragment -->
     <string name="press_plus_button">Press the plus button below to create new order</string>
@@ -23,4 +23,6 @@
     <!-- related to view Order Fragment-->
     <string name="order_created">Order created</string>
     <string name="cancel_order">Cancel Order</string>
+
+    <string name="add_item">Add Item</string>
 </resources>
