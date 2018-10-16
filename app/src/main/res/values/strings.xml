@@ -19,4 +19,8 @@
     <string name="delivery_date">Delivery Date :</string>
     <string name="save_order">Save Order</string>
     <string name="place_order">Place Order</string>
+
+    <!-- related to view Order Fragment-->
+    <string name="order_created">Order created</string>
+    <string name="cancel_order">Cancel Order</string>
 </resources>

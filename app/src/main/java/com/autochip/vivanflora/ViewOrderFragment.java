@@ -1,12 +1,28 @@
 package com.autochip.vivanflora;
 
+import android.annotation.SuppressLint;
+import android.app.DatePickerDialog;
 import android.content.Context;
-import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.DatePicker;
+import android.widget.ScrollView;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 import app_utility.OnFragmentInteractionListener;
 
@@ -30,6 +46,19 @@ public class ViewOrderFragment extends Fragment {
     private String mParam2;
 
     private OnFragmentInteractionListener mListener;
+
+    TableLayout tlProducts;
+    //TableRow[] rows;
+    TableRow row;
+    TableRow trHeading;
+
+    Button btnPlaceOrder, btnSaveOrder;
+    TextView tvDate;
+    Button btnDelete;
+    ArrayList<TextView> alSlNoTextView = new ArrayList<>();
+    FloatingActionButton fabCreateOrder;
+    ScrollView scrollView;
+    private final Calendar myCalendar = Calendar.getInstance();
 
     public ViewOrderFragment() {
         // Required empty public constructor
@@ -66,9 +95,114 @@ public class ViewOrderFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_view_order, container, false);
+        View view = inflater.inflate(R.layout.fragment_view_order, container, false);
+        init(view, inflater);
+        handleRow();
+
+        fabCreateOrder.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (alSlNoTextView.size() != 30) {
+                    handleRow();
+                } else
+                    Toast.makeText(getActivity(), "Maximum 30 products allowed, please create new quotation", Toast.LENGTH_LONG).show();
+            }
+        });
+        return view;
     }
 
+    void init(View view, LayoutInflater inflater) {
+        //rows = new TableRow[10];
+        //baButtonDelete = new Button[10];
+        tvDate = view.findViewById(R.id.tv_date);
+        Date date = new Date();
+        String modifiedDate= new SimpleDateFormat("dd-MM-yyyy", Locale.US).format(date);
+        tvDate.setText(modifiedDate);
+
+        tvDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                DatePickerDialog.OnDateSetListener date = new DatePickerDialog.OnDateSetListener() {
+
+                    @Override
+                    public void onDateSet(DatePicker view, int year, int monthOfYear,
+                                          int dayOfMonth) {
+                        myCalendar.set(Calendar.YEAR, year);
+                        myCalendar.set(Calendar.MONTH, monthOfYear);
+                        myCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                        String myFormat = "dd/MM/yyyy"; //In which you need put here
+                        SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
+                        tvDate.setText(sdf.format(myCalendar.getTime()));
+                    }
+
+                };
+                DatePickerDialog dialog = new DatePickerDialog(getActivity(), date,
+                        myCalendar.get(Calendar.YEAR), myCalendar.get(Calendar.MONTH),
+                        myCalendar.get(Calendar.DAY_OF_MONTH));
+                dialog.show();
+            }
+        });
+
+        btnSaveOrder = view.findViewById(R.id.btn_save_order);
+        btnPlaceOrder = view.findViewById(R.id.btn_place_order);
+
+        tlProducts = view.findViewById(R.id.tl_products);
+        trHeading = (TableRow) inflater.inflate(R.layout.table_row_heading, null);
+
+        fabCreateOrder = view.findViewById(R.id.fab_create_order);
+        scrollView = view.findViewById(R.id.sv_create_order);
+        scrollView.setSmoothScrollingEnabled(true);
+    }
+
+    void handleRow() {
+        row = (TableRow) getLayoutInflater().inflate(R.layout.table_row, null);
+        btnDelete = row.findViewById(R.id.btn_table_row_delete);
+        if (tlProducts.getChildCount() == 0)
+            tlProducts.addView(trHeading, 0);
+
+        TextView tvSlNo = row.findViewById(R.id.tv_sl_no_value);
+        alSlNoTextView.add(tvSlNo);
+        tvSlNo.setText(String.valueOf(alSlNoTextView.size()));
+
+        tlProducts.addView(row);
+        if (alSlNoTextView.size() > 10)
+            scrollView.fullScroll(View.FOCUS_DOWN);
+
+        btnDelete = row.findViewById(R.id.btn_table_row_delete);
+        btnDelete.setTag(alSlNoTextView.size());
+        btnDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                row = (TableRow) view.getParent();
+                TextView tv = row.findViewById(R.id.tv_sl_no_value);
+                alSlNoTextView.remove(tv);
+                tlProducts.removeView(row);
+                new updateSerialNoAsync().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
+        });
+        //new updateSerialNoAsync().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+
+    @SuppressLint("StaticFieldLeak")
+    private class updateSerialNoAsync extends AsyncTask<String, String, String> {
+        @Override
+        protected String doInBackground(String... params) {
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            TextView tv;
+            String sText;
+
+            for (int i = 0; i < alSlNoTextView.size(); i++) {
+                tv = alSlNoTextView.get(i);
+                sText = String.valueOf(i + 1);
+                tv.setText(sText);
+            }
+        }
+    }
 
     @Override
     public void onAttach(Context context) {

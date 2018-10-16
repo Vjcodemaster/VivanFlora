@@ -130,6 +130,9 @@ public class HomeScreenActivity extends AppCompatActivity implements OnFragmentI
             case 5:
                 tvTitle.setText(R.string.create_order);
                 break;
+            case 6:
+                tvTitle.setText(R.string.view_order);
+                break;
             default:
                 tvTitle.setText(R.string.app_name);
                 break;
@@ -187,6 +190,9 @@ public class HomeScreenActivity extends AppCompatActivity implements OnFragmentI
                 show(viewAnimate, findViewById(R.id.fl_container));
                 changeTitleTo(5, "");
                 break;
+            case "MY_ORDER_ITEM_CLICK":
+                changeTitleTo(6, "");
+                break;
         }
     }
 
@@ -211,6 +217,9 @@ public class HomeScreenActivity extends AppCompatActivity implements OnFragmentI
                     break;
                 case "CreateOrderFragment":
                     changeTitleTo(5, "");
+                    break;
+                case "ViewOrderFragment":
+                    changeTitleTo(6, "");
                     break;
                 default:
                     changeTitleTo(0, "");

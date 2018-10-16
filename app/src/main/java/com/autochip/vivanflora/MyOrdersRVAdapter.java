@@ -2,7 +2,9 @@ package com.autochip.vivanflora;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,6 +38,23 @@ class MyOrdersRVAdapter extends RecyclerView.Adapter<MyOrdersRVAdapter.ProductsH
 
     @Override
     public void onBindViewHolder(@NonNull MyOrdersRVAdapter.ProductsHolder holder, int position) {
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Fragment newFragment;
+                FragmentTransaction transaction;
+                String sBackStackParent;
+                newFragment = new ViewOrderFragment();
+                //newFragment.setArguments(bundle);
+                sBackStackParent = newFragment.getClass().getName();
+                transaction = supportFragmentManager.beginTransaction();
+                //transaction.setCustomAnimations(R.anim.t2b, R.anim.b2t);
+                transaction.replace(R.id.fl_container, newFragment, sBackStackParent);
+                transaction.addToBackStack(null);
+                transaction.commit();
+                HomeScreenActivity.onFragmentInteractionListener.onFragmentMessage("MY_ORDER_ITEM_CLICK", 6);
+            }
+        });
     }
 
     @Override
