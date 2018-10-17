@@ -7,11 +7,13 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
+import app_utility.VivanFloraAsyncTask;
+
 public class LoginActivity extends AppCompatActivity {
 
     Button btnLogin;
     TextInputLayout etUserID, etPassword;
-
+    VivanFloraAsyncTask vivanFloraAsyncTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,10 +24,12 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String sUserID = etUserID.getEditText().getText().toString();
+                vivanFloraAsyncTask = new VivanFloraAsyncTask();
+                vivanFloraAsyncTask.execute(String.valueOf(3), "");
+                /*String sUserID = etUserID.getEditText().getText().toString();
                 Intent in = new Intent(LoginActivity.this, HomeScreenActivity.class);
                 startActivity(in);
-                finish();
+                finish();*/
             }
         });
         ////7894561230
