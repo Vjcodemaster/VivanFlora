@@ -3,6 +3,7 @@ package app_utility;
 import android.os.AsyncTask;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import static app_utility.StaticReferenceClass.DB_NAME;
@@ -13,6 +14,8 @@ import static app_utility.StaticReferenceClass.SERVER_URL;
 import static app_utility.StaticReferenceClass.USER_ID;
 
 public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
+
+    LinkedHashMap<String, Integer> lhmProductsWithID = new LinkedHashMap<>();
 
     public VivanFloraAsyncTask() {
 
@@ -38,6 +41,7 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
                 break;
             case 4:
                 //snapRoadTask(params[1]);
+                readProducts();
                 break;
         }
         return null;
@@ -75,6 +79,18 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
 
         for (int i = 0; i < data.size(); ++i) {
 
+        }
+    }
+
+    private void readProducts(){
+        OdooConnect oc = OdooConnect.connect(SERVER_URL, PORT_NO, DB_NAME, USER_ID, PASSWORD);
+        List<HashMap<String, Object>> data = oc.search_read("product.template", new Object[]{
+                new Object[]{new Object[]{"type", "=", "product"}}}, "id", "name");
+
+        for (int i = 0; i < data.size(); ++i) {
+            int id = Integer.valueOf(data.get(i).get("id").toString());
+            String sName = String.valueOf(data.get(i).get("name").toString());
+            lhmProductsWithID.put(sName, id);
         }
     }
 
