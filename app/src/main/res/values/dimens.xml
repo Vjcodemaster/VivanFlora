@@ -11,4 +11,7 @@
     <dimen name="activity_image_height">100dp</dimen>
 
     <dimen name="layout_margin_top_large">30dp</dimen>
+
+    <!-- related to progressbar-->
+    <dimen name="layout_margin_progressbar">4dp</dimen>
 </resources>

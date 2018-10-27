@@ -3,18 +3,18 @@ package com.autochip.vivanflora;
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
-import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TableLayout;
@@ -26,20 +26,28 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
+import app_utility.OnAsyncTaskInterface;
 import app_utility.OnFragmentInteractionListener;
+import app_utility.VivanFloraAsyncTask;
 
 
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
  * {@link OnFragmentInteractionListener} interface
+ * {@link OnAsyncTaskInterface}
  * to handle interaction events.
  * Use the {@link CreateOrderFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class CreateOrderFragment extends Fragment {
+public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterface {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
@@ -48,6 +56,12 @@ public class CreateOrderFragment extends Fragment {
     private String mParam2;
 
     private OnFragmentInteractionListener mListener;
+
+    private OnAsyncTaskInterface onAsyncTaskInterface;
+
+    ArrayList<String> alProducts = new ArrayList<>();
+    ArrayAdapter<String> adapter;
+    Set<String> hsSelectedProducts = new HashSet<>();
 
     TableLayout tlProducts;
     //TableRow[] rows;
@@ -61,6 +75,8 @@ public class CreateOrderFragment extends Fragment {
     FloatingActionButton fabCreateOrder;
     ScrollView scrollView;
     Spinner spinner;
+    VivanFloraAsyncTask vivanFloraAsyncTask;
+
     private final Calendar myCalendar = Calendar.getInstance();
 
     public CreateOrderFragment() {
@@ -88,10 +104,14 @@ public class CreateOrderFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        onAsyncTaskInterface = this;
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        vivanFloraAsyncTask = new VivanFloraAsyncTask(getActivity(), onAsyncTaskInterface);
+        vivanFloraAsyncTask.execute(String.valueOf(4), "");
+        alProducts.add("Select Product");
     }
 
     @Override
@@ -105,10 +125,13 @@ public class CreateOrderFragment extends Fragment {
         fabCreateOrder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (alSlNoTextView.size() != 30) {
-                    handleRow();
-                } else
-                    Toast.makeText(getActivity(), "Maximum 30 products allowed, please create new quotation", Toast.LENGTH_LONG).show();
+                if (spinner.getSelectedItemPosition() != 0)
+                    if (alSlNoTextView.size() != 30) {
+                        handleRow();
+                    } else
+                        Toast.makeText(getActivity(), "Maximum 30 products allowed, please create new quotation", Toast.LENGTH_LONG).show();
+                else
+                    Toast.makeText(getActivity(), "Please select product first", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -120,7 +143,7 @@ public class CreateOrderFragment extends Fragment {
         //baButtonDelete = new Button[10];
         tvDate = view.findViewById(R.id.tv_date);
         Date date = new Date();
-        String modifiedDate= new SimpleDateFormat("dd-MM-yyyy", Locale.US).format(date);
+        String modifiedDate = new SimpleDateFormat("dd-MM-yyyy", Locale.US).format(date);
         tvDate.setText(modifiedDate);
 
         tvDate.setOnClickListener(new View.OnClickListener() {
@@ -157,7 +180,32 @@ public class CreateOrderFragment extends Fragment {
         scrollView = view.findViewById(R.id.sv_create_order);
         scrollView.setSmoothScrollingEnabled(true);
 
+        btnSaveOrder.setOnClickListener(onClickListener);
+        btnPlaceOrder.setOnClickListener(onClickListener);
     }
+
+    private View.OnClickListener onClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()) {
+                case R.id.btn_save_order:
+                    Toast.makeText(getActivity(), "SAVE", Toast.LENGTH_SHORT).show();
+                    break;
+                case R.id.btn_place_order:
+                    Toast.makeText(getActivity(), "PLACE", Toast.LENGTH_SHORT).show();
+                    break;
+                case R.id.btn_table_row_delete:
+                    row = (TableRow) v.getParent();
+                    TextView tv = row.findViewById(R.id.tv_sl_no_value);
+                    Spinner spinner = row.findViewById(R.id.spinner_product);
+                    hsSelectedProducts.remove(spinner.getSelectedItem().toString());
+                    alSlNoTextView.remove(tv);
+                    tlProducts.removeView(row);
+                    new updateSerialNoAsync().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    break;
+            }
+        }
+    };
 
     void handleRow() {
         row = (TableRow) getLayoutInflater().inflate(R.layout.table_row, null);
@@ -174,14 +222,16 @@ public class CreateOrderFragment extends Fragment {
             scrollView.fullScroll(View.FOCUS_DOWN);
 
 
-
         btnDelete = row.findViewById(R.id.btn_table_row_delete);
         btnDelete.setTag(alSlNoTextView.size());
-        btnDelete.setOnClickListener(new View.OnClickListener() {
+        btnDelete.setOnClickListener(onClickListener);
+        /*btnDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 row = (TableRow) view.getParent();
                 TextView tv = row.findViewById(R.id.tv_sl_no_value);
+                Spinner spinner = row.findViewById(R.id.spinner_product);
+                hsSelectedProducts.remove(spinner.getSelectedItem().toString());
                 alSlNoTextView.remove(tv);
                 tlProducts.removeView(row);
                 new updateSerialNoAsync().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -192,11 +242,52 @@ public class CreateOrderFragment extends Fragment {
         alMake.add("Gerbera");
         alMake.add("Red Rose");
         alMake.add("Sun flower");
-        alMake.add("Casa Blanca");
+        alMake.add("Casa Blanca");*/
         spinner = row.findViewById(R.id.spinner_product);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_row, R.id.tv_products, alMake); //android.R.layout.simple_spinner_item
+        adapter = new ArrayAdapter<String>(
+                getActivity(), R.layout.spinner_row, R.id.tv_products, alProducts) {
+            @Override
+            public boolean isEnabled(int position) {
+                return position != 0;
+            }
+
+            @Override
+            public View getDropDownView(int position, View convertView,
+                                        ViewGroup parent) {
+                View view = super.getDropDownView(position, convertView, parent);
+                TextView tv = (TextView) view.findViewById(R.id.tv_products);
+                if (position == 0) {
+                    // Set the hint text color gray
+                    tv.setTextColor(Color.GRAY);
+                } else {
+                    tv.setTextColor(Color.BLACK);
+                }
+                return view;
+            }
+        };
+
+        //adapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_row, R.id.tv_products, alProducts); //android.R.layout.simple_spinner_item
         //adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
+        //adapter.setDropDownViewResource(R.layout.spinner_row);
         spinner.setAdapter(adapter);
+
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                TextView tv = view.findViewById(R.id.tv_products);
+                if (spinner.getSelectedItemPosition() != 0) {
+                    hsSelectedProducts.add(spinner.getSelectedItem().toString());
+                    tv.setTextColor(getResources().getColor(R.color.dark_grey));
+                } else {
+                    tv.setTextColor(getResources().getColor(R.color.light_grey));
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
         //new updateSerialNoAsync().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
@@ -208,6 +299,16 @@ public class CreateOrderFragment extends Fragment {
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
+    public void onAsyncTaskComplete(String sCase, int nFlag, LinkedHashMap<String, Integer> lhmData) {
+        switch (nFlag) {
+            case 4:
+                alProducts.addAll(lhmData.keySet());
+                spinner.setAdapter(adapter);
+                break;
         }
     }
 

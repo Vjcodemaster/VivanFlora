@@ -13,7 +13,7 @@ public class LoginActivity extends AppCompatActivity {
 
     Button btnLogin;
     TextInputLayout etUserID, etPassword;
-    VivanFloraAsyncTask vivanFloraAsyncTask;
+    //VivanFloraAsyncTask vivanFloraAsyncTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,12 +24,12 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                vivanFloraAsyncTask = new VivanFloraAsyncTask();
-                vivanFloraAsyncTask.execute(String.valueOf(4), "");
-                /*String sUserID = etUserID.getEditText().getText().toString();
+                /*vivanFloraAsyncTask = new VivanFloraAsyncTask();
+                vivanFloraAsyncTask.execute(String.valueOf(4), "");*/
+                String sUserID = etUserID.getEditText().getText().toString();
                 Intent in = new Intent(LoginActivity.this, HomeScreenActivity.class);
                 startActivity(in);
-                finish();*/
+                finish();
             }
         });
         ////7894561230

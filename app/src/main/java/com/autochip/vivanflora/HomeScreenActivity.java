@@ -14,9 +14,12 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.LinkedHashMap;
+
+import app_utility.OnAsyncTaskInterface;
 import app_utility.OnFragmentInteractionListener;
 
-public class HomeScreenActivity extends AppCompatActivity implements OnFragmentInteractionListener {
+public class HomeScreenActivity extends AppCompatActivity implements OnFragmentInteractionListener, OnAsyncTaskInterface {
 
     int nUserDisplayHeight;
     int[] nOffSetLocation;
@@ -236,6 +239,11 @@ public class HomeScreenActivity extends AppCompatActivity implements OnFragmentI
     public void onBackPressed() {
         super.onBackPressed();
         backPressed();
+    }
+
+    @Override
+    public void onAsyncTaskComplete(String sCase, int nFlag, LinkedHashMap<String, Integer> lhmData) {
+
     }
     /*switch (view.getId()) {
         case R.id.btn_create_order:

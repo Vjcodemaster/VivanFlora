@@ -1,5 +1,7 @@
 package app_utility;
 
+import android.app.Activity;
+import android.content.Context;
 import android.os.AsyncTask;
 
 import java.util.HashMap;
@@ -15,16 +17,31 @@ import static app_utility.StaticReferenceClass.USER_ID;
 
 public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
 
-    LinkedHashMap<String, Integer> lhmProductsWithID = new LinkedHashMap<>();
+    private LinkedHashMap<String, Integer> lhmProductsWithID = new LinkedHashMap<>();
+    private CircularProgressBar circularProgressBar;
+    private Activity aActivity;
+    private Context context;
+    private OnAsyncTaskInterface onAsyncTaskInterface;
 
-    public VivanFloraAsyncTask() {
+    public VivanFloraAsyncTask(Activity aActivity, OnAsyncTaskInterface onAsyncTaskInterface) {
+        this.aActivity = aActivity;
+        this.onAsyncTaskInterface = onAsyncTaskInterface;
+    }
 
+    public VivanFloraAsyncTask(Context context) {
+        this.context = context;
     }
 
     private Boolean isConnected = false;
     private int ERROR_CODE = 0;
     private String sMsgResult;
     private int type;
+
+    @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
+        setProgressBar();
+    }
 
     @Override
     protected String doInBackground(String... params) {
@@ -50,6 +67,23 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
     @Override
     protected void onPostExecute(String result) {
         super.onPostExecute(result);
+        if (ERROR_CODE != 0) {
+            switch (ERROR_CODE) {
+                case NETWORK_ERROR_CODE:
+                    unableToConnectServer(ERROR_CODE);
+                    break;
+            }
+            ERROR_CODE = 0;
+            return;
+        }
+        switch (type) {
+            case 4:
+                onAsyncTaskInterface.onAsyncTaskComplete("READ_PRODUCTS", type, lhmProductsWithID);
+                break;
+        }
+        if (circularProgressBar != null && circularProgressBar.isShowing()) {
+            circularProgressBar.dismiss();
+        }
     }
 
     private void loginTask() {
@@ -82,7 +116,7 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
         }
     }
 
-    private void readProducts(){
+    private void readProducts() {
         OdooConnect oc = OdooConnect.connect(SERVER_URL, PORT_NO, DB_NAME, USER_ID, PASSWORD);
         List<HashMap<String, Object>> data = oc.search_read("product.template", new Object[]{
                 new Object[]{new Object[]{"type", "=", "product"}}}, "id", "name");
@@ -92,6 +126,20 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
             String sName = String.valueOf(data.get(i).get("name").toString());
             lhmProductsWithID.put(sName, id);
         }
+    }
+
+    private void unableToConnectServer(int errorCode) {
+        //MainActivity.asyncInterface.onAsyncTaskCompleteGeneral("SERVER_ERROR", 2001, errorCode, "", null);
+    }
+
+    private void setProgressBar() {
+        if (aActivity == null)
+            circularProgressBar = new CircularProgressBar(context);
+        else
+            circularProgressBar = new CircularProgressBar(aActivity);
+        circularProgressBar.setCanceledOnTouchOutside(false);
+        circularProgressBar.setCancelable(false);
+        circularProgressBar.show();
     }
 
 }
