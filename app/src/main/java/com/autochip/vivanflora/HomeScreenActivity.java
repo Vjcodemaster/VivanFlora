@@ -1,6 +1,7 @@
 package com.autochip.vivanflora;
 
 import android.animation.Animator;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,10 +15,12 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 import app_utility.OnAsyncTaskInterface;
 import app_utility.OnFragmentInteractionListener;
+import app_utility.StatusCheckService;
 
 public class HomeScreenActivity extends AppCompatActivity implements OnFragmentInteractionListener, OnAsyncTaskInterface {
 
@@ -49,6 +52,7 @@ public class HomeScreenActivity extends AppCompatActivity implements OnFragmentI
                 onBackPressed();
             }
         });
+        startService(new Intent(HomeScreenActivity.this, StatusCheckService.class));
     }
 
     public void onClickOrderButton(View view) {
@@ -242,7 +246,7 @@ public class HomeScreenActivity extends AppCompatActivity implements OnFragmentI
     }
 
     @Override
-    public void onAsyncTaskComplete(String sCase, int nFlag, LinkedHashMap<String, Integer> lhmData) {
+    public void onAsyncTaskComplete(String sCase, int nFlag, LinkedHashMap<String, ArrayList<String>> lhmData) {
 
     }
     /*switch (view.getId()) {

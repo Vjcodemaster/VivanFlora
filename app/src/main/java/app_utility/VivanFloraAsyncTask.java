@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -17,11 +18,12 @@ import static app_utility.StaticReferenceClass.USER_ID;
 
 public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
 
-    private LinkedHashMap<String, Integer> lhmProductsWithID = new LinkedHashMap<>();
+    private LinkedHashMap<String, ArrayList<String>> lhmProductsWithID = new LinkedHashMap<>();
     private CircularProgressBar circularProgressBar;
     private Activity aActivity;
     private Context context;
     private OnAsyncTaskInterface onAsyncTaskInterface;
+    private HashMap<String, Object> object = new HashMap<>();
 
     public VivanFloraAsyncTask(Activity aActivity, OnAsyncTaskInterface onAsyncTaskInterface) {
         this.aActivity = aActivity;
@@ -119,12 +121,17 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
     private void readProducts() {
         OdooConnect oc = OdooConnect.connect(SERVER_URL, PORT_NO, DB_NAME, USER_ID, PASSWORD);
         List<HashMap<String, Object>> data = oc.search_read("product.template", new Object[]{
-                new Object[]{new Object[]{"type", "=", "product"}}}, "id", "name");
+                new Object[]{new Object[]{"type", "=", "product"}}}, "id", "name", "list_price");
 
         for (int i = 0; i < data.size(); ++i) {
-            int id = Integer.valueOf(data.get(i).get("id").toString());
+            //int id = Integer.valueOf(data.get(i).get("id").toString());
             String sName = String.valueOf(data.get(i).get("name").toString());
-            lhmProductsWithID.put(sName, id);
+            //String sUnitPrice = String.valueOf(data.get(i).get("list_price").toString());
+            ArrayList<String> alData = new ArrayList<>();
+            alData.add(data.get(i).get("id").toString());
+            //alData.add(data.get(i).get("name").toString());
+            alData.add(data.get(i).get("list_price").toString());
+            lhmProductsWithID.put(sName, alData);
         }
     }
 

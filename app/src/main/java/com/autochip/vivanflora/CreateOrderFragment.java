@@ -76,6 +76,9 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
     ScrollView scrollView;
     Spinner spinner;
     VivanFloraAsyncTask vivanFloraAsyncTask;
+    String sCompare;
+    TextView tvUnitPrice, tvSubTotal;
+    LinkedHashMap<String, ArrayList<String>> lhmProductsData = new LinkedHashMap<>();
 
     private final Calendar myCalendar = Calendar.getInstance();
 
@@ -125,7 +128,7 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
         fabCreateOrder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (spinner.getSelectedItemPosition() != 0)
+                if (spinner.getSelectedItemPosition() != 0 && !sCompare.equals("Select Product"))
                     if (alSlNoTextView.size() != 30) {
                         handleRow();
                     } else
@@ -195,13 +198,20 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
                     Toast.makeText(getActivity(), "PLACE", Toast.LENGTH_SHORT).show();
                     break;
                 case R.id.btn_table_row_delete:
-                    row = (TableRow) v.getParent();
-                    TextView tv = row.findViewById(R.id.tv_sl_no_value);
-                    Spinner spinner = row.findViewById(R.id.spinner_product);
-                    hsSelectedProducts.remove(spinner.getSelectedItem().toString());
-                    alSlNoTextView.remove(tv);
-                    tlProducts.removeView(row);
-                    new updateSerialNoAsync().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    if(hsSelectedProducts.size() >=1) {
+                        row = (TableRow) v.getParent();
+                        TextView tv = row.findViewById(R.id.tv_sl_no_value);
+                        Spinner spinner = row.findViewById(R.id.spinner_product);
+                        sCompare = spinner.getSelectedItem().toString();
+                        hsSelectedProducts.remove(sCompare);
+                        alSlNoTextView.remove(tv);
+                        tlProducts.removeView(row);
+                        new updateSerialNoAsync().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                        if (sCompare.equals("Select Product")) {
+                            sCompare = "";
+                            spinner.setSelection(5);
+                        }
+                    }
                     break;
             }
         }
@@ -213,6 +223,8 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
         if (tlProducts.getChildCount() == 0)
             tlProducts.addView(trHeading, 0);
 
+        tvUnitPrice = row.findViewById(R.id.tv_unit_price_value);
+        tvSubTotal = row.findViewById(R.id.tv_sub_total_value);
         TextView tvSlNo = row.findViewById(R.id.tv_sl_no_value);
         alSlNoTextView.add(tvSlNo);
         tvSlNo.setText(String.valueOf(alSlNoTextView.size()));
@@ -275,12 +287,21 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 TextView tv = view.findViewById(R.id.tv_products);
-                if (spinner.getSelectedItemPosition() != 0) {
-                    hsSelectedProducts.add(spinner.getSelectedItem().toString());
+                sCompare = spinner.getSelectedItem().toString();
+                if (spinner.getSelectedItemPosition() != 0){
                     tv.setTextColor(getResources().getColor(R.color.dark_grey));
+                    ArrayList<String> alData = new ArrayList<>(lhmProductsData.get(sCompare));
+                    tvUnitPrice.setText(alData.get(1));
+                    hsSelectedProducts.add(sCompare);
                 } else {
                     tv.setTextColor(getResources().getColor(R.color.light_grey));
                 }
+
+                /*{
+                    tv.setTextColor(getResources().getColor(R.color.dark_grey));
+                } else {
+                    tv.setTextColor(getResources().getColor(R.color.light_grey));
+                }*/
             }
 
             @Override
@@ -303,11 +324,12 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
     }
 
     @Override
-    public void onAsyncTaskComplete(String sCase, int nFlag, LinkedHashMap<String, Integer> lhmData) {
+    public void onAsyncTaskComplete(String sCase, int nFlag, LinkedHashMap<String, ArrayList<String>> lhmData) {
         switch (nFlag) {
             case 4:
                 alProducts.addAll(lhmData.keySet());
                 spinner.setAdapter(adapter);
+                this.lhmProductsData = lhmData;
                 break;
         }
     }
