@@ -3,6 +3,7 @@ package app_utility;
 import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,7 +24,7 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
     private Activity aActivity;
     private Context context;
     private OnAsyncTaskInterface onAsyncTaskInterface;
-    private HashMap<String, Object> object = new HashMap<>();
+    private ArrayList<Integer> alPosition = new ArrayList<>();
 
     public VivanFloraAsyncTask(Activity aActivity, OnAsyncTaskInterface onAsyncTaskInterface) {
         this.aActivity = aActivity;
@@ -56,11 +57,11 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
                 //updateTask();
                 break;
             case 3:
-                readTask();
+                readProductAndImageTask();
                 break;
             case 4:
                 //snapRoadTask(params[1]);
-                readProducts();
+                //readProducts();
                 break;
         }
         return null;
@@ -79,8 +80,8 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
             return;
         }
         switch (type) {
-            case 4:
-                onAsyncTaskInterface.onAsyncTaskComplete("READ_PRODUCTS", type, lhmProductsWithID);
+            case 3:
+                onAsyncTaskInterface.onAsyncTaskComplete("READ_PRODUCTS", type, lhmProductsWithID, alPosition);
                 break;
         }
         if (circularProgressBar != null && circularProgressBar.isShowing()) {
@@ -108,17 +109,19 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
         //return isConnected;
     }
 
-    private void readTask() {
+    private void readImageTask() {
         OdooConnect oc = OdooConnect.connect(SERVER_URL, PORT_NO, DB_NAME, USER_ID, PASSWORD);
-        List<HashMap<String, Object>> data = oc.search_read("sale.order", new Object[]{
-                new Object[]{new Object[]{"id", "=", "265"}}}, "id", "name", "partner_id");
+        Object[] conditions = new Object[2];
+        conditions[0] = new Object[]{"res_model", "=", "product.template"};
+        conditions[1] = new Object[]{"res_field", "=", "image_medium"};
+        List<HashMap<String, Object>> data = oc.search_read("ir.attachment", new Object[]{conditions}, "id", "store_fname", "res_name");
 
         for (int i = 0; i < data.size(); ++i) {
 
         }
     }
 
-    private void readProducts() {
+    /*private void readProducts() {
         OdooConnect oc = OdooConnect.connect(SERVER_URL, PORT_NO, DB_NAME, USER_ID, PASSWORD);
         List<HashMap<String, Object>> data = oc.search_read("product.template", new Object[]{
                 new Object[]{new Object[]{"type", "=", "product"}}}, "id", "name", "list_price");
@@ -131,6 +134,36 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
             alData.add(data.get(i).get("id").toString());
             //alData.add(data.get(i).get("name").toString());
             alData.add(data.get(i).get("list_price").toString());
+            lhmProductsWithID.put(sName, alData);
+        }
+    }*/
+    private void readProductAndImageTask() {
+        OdooConnect oc = OdooConnect.connect(SERVER_URL, PORT_NO, DB_NAME, USER_ID, PASSWORD);
+        List<HashMap<String, Object>> productsData = oc.search_read("product.template", new Object[]{
+                new Object[]{new Object[]{"type", "=", "product"}}}, "id", "name", "list_price");
+
+        Object[] conditions = new Object[2];
+        conditions[0] = new Object[]{"res_model", "=", "product.template"};
+        conditions[1] = new Object[]{"res_field", "=", "image_medium"};
+        List<HashMap<String, Object>> imageData = oc.search_read("ir.attachment", new Object[]{conditions},
+                "id", "store_fname", "res_name");
+
+        for (int i = 0; i < productsData.size(); ++i) {
+            //int id = Integer.valueOf(data.get(i).get("id").toString());
+            String sName = String.valueOf(productsData.get(i).get("name").toString());
+            //String sUnitPrice = String.valueOf(data.get(i).get("list_price").toString());
+            ArrayList<String> alData = new ArrayList<>();
+            alData.add(productsData.get(i).get("id").toString());
+            //alData.add(data.get(i).get("name").toString());
+            alData.add(productsData.get(i).get("list_price").toString());
+            for(int j=0; j< imageData.size(); j++){
+                String base64 = imageData.get(j).get("store_fname").toString();
+                if(imageData.get(j).get("res_name").toString().equals(sName)){
+                    alData.add(base64);
+                    alPosition.add(i);
+                    break;
+                }
+            }
             lhmProductsWithID.put(sName, alData);
         }
     }

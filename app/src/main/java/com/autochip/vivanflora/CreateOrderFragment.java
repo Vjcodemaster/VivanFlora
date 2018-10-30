@@ -3,11 +3,14 @@ package com.autochip.vivanflora;
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +18,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TableLayout;
@@ -60,6 +64,7 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
     private OnAsyncTaskInterface onAsyncTaskInterface;
 
     ArrayList<String> alProducts = new ArrayList<>();
+    ArrayList<Integer> alImagePosition = new ArrayList<>();
     ArrayAdapter<String> adapter;
     Set<String> hsSelectedProducts = new HashSet<>();
 
@@ -113,7 +118,7 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
         vivanFloraAsyncTask = new VivanFloraAsyncTask(getActivity(), onAsyncTaskInterface);
-        vivanFloraAsyncTask.execute(String.valueOf(4), "");
+        vivanFloraAsyncTask.execute(String.valueOf(3), "");
         alProducts.add("Select Product");
     }
 
@@ -198,7 +203,7 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
                     Toast.makeText(getActivity(), "PLACE", Toast.LENGTH_SHORT).show();
                     break;
                 case R.id.btn_table_row_delete:
-                    if(hsSelectedProducts.size() >=1) {
+                    if (hsSelectedProducts.size() >= 1) {
                         row = (TableRow) v.getParent();
                         TextView tv = row.findViewById(R.id.tv_sl_no_value);
                         Spinner spinner = row.findViewById(R.id.spinner_product);
@@ -267,12 +272,20 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
             public View getDropDownView(int position, View convertView,
                                         ViewGroup parent) {
                 View view = super.getDropDownView(position, convertView, parent);
-                TextView tv = (TextView) view.findViewById(R.id.tv_products);
+                TextView tv = view.findViewById(R.id.tv_products);
+                ImageView iv = view.findViewById(R.id.iv_product_image);
                 if (position == 0) {
                     // Set the hint text color gray
                     tv.setTextColor(Color.GRAY);
                 } else {
                     tv.setTextColor(Color.BLACK);
+                    if (alImagePosition.contains(position + 1)) {
+                        ArrayList<String> alImageData = new ArrayList<>(lhmProductsData.get(tv.getText().toString()));
+                        Bitmap bitmap = convertToBitmap(alImageData.get(2).substring(3));
+                        iv.setImageBitmap(bitmap);
+                    }
+
+                    //if (bitmap != null) {
                 }
                 return view;
             }
@@ -287,12 +300,14 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 TextView tv = view.findViewById(R.id.tv_products);
+
                 sCompare = spinner.getSelectedItem().toString();
-                if (spinner.getSelectedItemPosition() != 0){
+                if (spinner.getSelectedItemPosition() != 0) {
                     tv.setTextColor(getResources().getColor(R.color.dark_grey));
                     ArrayList<String> alData = new ArrayList<>(lhmProductsData.get(sCompare));
                     tvUnitPrice.setText(alData.get(1));
                     hsSelectedProducts.add(sCompare);
+
                 } else {
                     tv.setTextColor(getResources().getColor(R.color.light_grey));
                 }
@@ -324,12 +339,14 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
     }
 
     @Override
-    public void onAsyncTaskComplete(String sCase, int nFlag, LinkedHashMap<String, ArrayList<String>> lhmData) {
+    public void onAsyncTaskComplete(String sCase, int nFlag, LinkedHashMap<String, ArrayList<String>> lhmData,
+                                    ArrayList<Integer> alImagePosition) {
         switch (nFlag) {
-            case 4:
+            case 3:
                 alProducts.addAll(lhmData.keySet());
                 spinner.setAdapter(adapter);
                 this.lhmProductsData = lhmData;
+                this.alImagePosition = alImagePosition;
                 break;
         }
     }
@@ -352,6 +369,14 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
                 tv.setText(sText);
             }
         }
+    }
+
+    public static Bitmap convertToBitmap(String base64Str) throws IllegalArgumentException {
+        byte[] decodedString = Base64.decode(base64Str, Base64.DEFAULT);
+        return BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+        /*byte[] decodedBytes = Base64.decode(base64Str.substring(base64Str.indexOf(",")  + 1), Base64.DEFAULT
+        );
+        return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);*/
     }
 
 }
