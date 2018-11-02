@@ -32,8 +32,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -118,7 +116,7 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
         vivanFloraAsyncTask = new VivanFloraAsyncTask(getActivity(), onAsyncTaskInterface);
-        vivanFloraAsyncTask.execute(String.valueOf(3), "");
+        vivanFloraAsyncTask.execute(String.valueOf(2), "");
         alProducts.add("Select Product");
     }
 

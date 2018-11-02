@@ -39,6 +39,7 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
     private int ERROR_CODE = 0;
     private String sMsgResult;
     private int type;
+    private int[] IDS = new int[2];
 
     @Override
     protected void onPreExecute() {
@@ -54,6 +55,7 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
                 loginTask();
                 break;
             case 2:
+                createOrder();
                 //updateTask();
                 break;
             case 3:
@@ -107,6 +109,48 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
         }
         // }
         //return isConnected;
+    }
+
+    private void createOrder(){
+        //240
+        try {
+            OdooConnect oc = OdooConnect.connect(SERVER_URL, PORT_NO, DB_NAME, USER_ID, PASSWORD);
+            Integer createCustomer = oc.create("sale.order", new HashMap() {{
+                put("partner_id", 562);
+            }});
+            IDS[0] = createCustomer;
+            createOne2Many(createCustomer);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private void createOne2Many(final int ID) {
+
+        try {
+            OdooConnect oc = OdooConnect.connect(SERVER_URL, PORT_NO, DB_NAME, USER_ID, PASSWORD);
+/*
+            @SuppressWarnings("unchecked")
+            Integer one2Many = oc.create("web.service.child", new HashMap() {{
+                put("name", "Autochip");
+                put("mobile", "4103246464");
+                put("service_id", ID); //one to many
+            }});*/
+
+            //if (alOne2ManyModelNames.size() >= 1) {
+                @SuppressWarnings("unchecked")
+                Integer one2Many = oc.create("sale.order.line", new HashMap() {{
+                    put("product_id", 113);
+                    put("order_id", ID);
+                }});
+            IDS[1] = one2Many;
+            //}
+
+        } catch (Exception e) {
+            ERROR_CODE = NETWORK_ERROR_CODE;
+            e.printStackTrace();
+        }
+        //return one2Many;
     }
 
     private void readImageTask() {
