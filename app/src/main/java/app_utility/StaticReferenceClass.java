@@ -12,6 +12,7 @@ public class StaticReferenceClass {
     public static final String PASSWORD = "autochip@505";//"a";//"autochip";//
     public static final String MODEL_NAME = "res.partner";
 
+    public static final String[] ORDER_STATE = {"draft", "sent", "cancel"};
     public static final int NETWORK_ERROR_CODE = 9301;
 
     /*public static final String MODEL_FLEET_VEHICLE = "fleet.vehicle";

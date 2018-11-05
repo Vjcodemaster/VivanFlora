@@ -30,6 +30,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -38,6 +39,8 @@ import java.util.Set;
 import app_utility.OnAsyncTaskInterface;
 import app_utility.OnFragmentInteractionListener;
 import app_utility.VivanFloraAsyncTask;
+
+import static app_utility.StaticReferenceClass.ORDER_STATE;
 
 
 /**
@@ -115,8 +118,8 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-        vivanFloraAsyncTask = new VivanFloraAsyncTask(getActivity(), onAsyncTaskInterface);
-        vivanFloraAsyncTask.execute(String.valueOf(2), "");
+        /*vivanFloraAsyncTask = new VivanFloraAsyncTask(getActivity(), onAsyncTaskInterface);
+        vivanFloraAsyncTask.execute(String.valueOf(2), "");*/
         alProducts.add("Select Product");
     }
 
@@ -196,9 +199,15 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
             switch (v.getId()) {
                 case R.id.btn_save_order:
                     Toast.makeText(getActivity(), "SAVE", Toast.LENGTH_SHORT).show();
+                    vivanFloraAsyncTask = new VivanFloraAsyncTask(getActivity(), onAsyncTaskInterface);
+                    vivanFloraAsyncTask.execute(String.valueOf(2), "");
                     break;
                 case R.id.btn_place_order:
                     Toast.makeText(getActivity(), "PLACE", Toast.LENGTH_SHORT).show();
+                    HashMap<String, Object> hmDataList = new HashMap<>();
+                    hmDataList.put("state", ORDER_STATE[2]);
+                    vivanFloraAsyncTask = new VivanFloraAsyncTask(getActivity(), onAsyncTaskInterface, hmDataList);
+                    vivanFloraAsyncTask.execute(String.valueOf(3), "");
                     break;
                 case R.id.btn_table_row_delete:
                     if (hsSelectedProducts.size() >= 1) {

@@ -12,6 +12,7 @@ import java.util.List;
 
 import static app_utility.StaticReferenceClass.DB_NAME;
 import static app_utility.StaticReferenceClass.NETWORK_ERROR_CODE;
+import static app_utility.StaticReferenceClass.ORDER_STATE;
 import static app_utility.StaticReferenceClass.PASSWORD;
 import static app_utility.StaticReferenceClass.PORT_NO;
 import static app_utility.StaticReferenceClass.SERVER_URL;
@@ -25,9 +26,18 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
     private Context context;
     private OnAsyncTaskInterface onAsyncTaskInterface;
     private ArrayList<Integer> alPosition = new ArrayList<>();
+    private HashMap<String, Object> hmDataList = new HashMap<>();
+    private int nOrderID = 191;
 
     public VivanFloraAsyncTask(Activity aActivity, OnAsyncTaskInterface onAsyncTaskInterface) {
         this.aActivity = aActivity;
+        this.onAsyncTaskInterface = onAsyncTaskInterface;
+    }
+
+    public VivanFloraAsyncTask(Activity aActivity, OnAsyncTaskInterface onAsyncTaskInterface,
+                               HashMap<String, Object> hmDataList) {
+        this.aActivity = aActivity;
+        this.hmDataList = hmDataList;
         this.onAsyncTaskInterface = onAsyncTaskInterface;
     }
 
@@ -59,9 +69,10 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
                 //updateTask();
                 break;
             case 3:
-                readProductAndImageTask();
+                placeOrder();
                 break;
             case 4:
+                readProductAndImageTask();
                 //snapRoadTask(params[1]);
                 //readProducts();
                 break;
@@ -117,6 +128,7 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
             OdooConnect oc = OdooConnect.connect(SERVER_URL, PORT_NO, DB_NAME, USER_ID, PASSWORD);
             Integer createCustomer = oc.create("sale.order", new HashMap() {{
                 put("partner_id", 562);
+                //put("state", ORDER_STATE[0]);
             }});
             IDS[0] = createCustomer;
             createOne2Many(createCustomer);
@@ -124,6 +136,7 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
             e.printStackTrace();
         }
     }
+
 
     private void createOne2Many(final int ID) {
 
@@ -151,6 +164,16 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
             e.printStackTrace();
         }
         //return one2Many;
+    }
+
+    private void placeOrder(){
+        //240
+        try {
+            OdooConnect oc = OdooConnect.connect(SERVER_URL, PORT_NO, DB_NAME, USER_ID, PASSWORD);
+            Boolean idC = oc.write("sale.order", new Object[]{nOrderID}, hmDataList);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     private void readImageTask() {
