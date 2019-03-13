@@ -3,11 +3,11 @@ package app_utility;
 
 public class StaticReferenceClass {
     public static final String LOGIN_URL = "http://192.168.1.46";//http://192.168.1.100:9040//
-    public static final String SERVER_URL = "192.168.1.100";//"192.168.1.46";//"192.168.42.192";//"192.168.1.41";//https://"18.222.197.80";//"autochipars.odoo.com";//
-    public static final int PORT_NO = 9080;//8069;//9040
+    public static final String SERVER_URL = "192.168.1.15";//"192.168.1.46";//"192.168.42.192";//"192.168.1.41";//https://"18.222.197.80";//"autochipars.odoo.com";//
+    public static final int PORT_NO = 9080;//8069;//9040;//
 
 
-    public static final String DB_NAME = "VivanFlora_1210";//"ARS";//"chellaminfotech-ars-master-73173";//"ARS_9040";//"test_db";//"auto";//
+    public static final String DB_NAME = "VivanFlora";//"ARS";//"chellaminfotech-ars-master-73173";//"ARS_9040";//"test_db";//"auto";//
     public static final String USER_ID = "admin";//"vijay@gmail.com";//"vijay.eh4@gmail.com";//"suresh";//
     public static final String PASSWORD = "autochip@505";//"a";//"autochip";//
     public static final String MODEL_NAME = "res.partner";

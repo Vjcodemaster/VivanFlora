@@ -1,7 +1,6 @@
 package com.autochip.vivanflora;
 
 import android.animation.Animator;
-import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -18,7 +17,6 @@ import java.util.LinkedHashMap;
 
 import app_utility.OnAsyncTaskInterface;
 import app_utility.OnFragmentInteractionListener;
-import app_utility.StatusCheckService;
 
 public class HomeScreenActivity extends AppCompatActivity implements OnFragmentInteractionListener, OnAsyncTaskInterface {
 
@@ -50,7 +48,7 @@ public class HomeScreenActivity extends AppCompatActivity implements OnFragmentI
                 onBackPressed();
             }
         });
-        startService(new Intent(HomeScreenActivity.this, StatusCheckService.class));
+        //startService(new Intent(HomeScreenActivity.this, StatusCheckService.class));
     }
 
     public void onClickOrderButton(View view) {

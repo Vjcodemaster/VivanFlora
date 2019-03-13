@@ -93,7 +93,7 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
             return;
         }
         switch (type) {
-            case 3:
+            case 4:
                 onAsyncTaskInterface.onAsyncTaskComplete("READ_PRODUCTS", type, lhmProductsWithID, alPosition);
                 break;
         }
