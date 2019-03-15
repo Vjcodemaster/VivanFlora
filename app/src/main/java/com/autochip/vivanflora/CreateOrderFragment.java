@@ -29,6 +29,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -40,6 +41,8 @@ import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Set;
 
+import app_utility.DataBaseHelper;
+import app_utility.DatabaseHandler;
 import app_utility.OnAsyncTaskInterface;
 import app_utility.OnFragmentInteractionListener;
 import app_utility.VivanFloraAsyncTask;
@@ -60,6 +63,8 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+
+    boolean isProductAlreadyPresent = false;
 
     private String mParam1;
     private String mParam2;
@@ -89,7 +94,9 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
     String sCompare;
     TextView tvUnitPrice, tvSubTotal;
     EditText etQuantity;
-    int nQuantity;
+    float nQuantity;
+
+    DatabaseHandler dbh;
 
     LinkedHashSet<ArrayList<String>> lhsData = new LinkedHashSet<>();
     LinkedHashMap<String, ArrayList<String>> lhmData = new LinkedHashMap<>();
@@ -131,6 +138,7 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        dbh = new DatabaseHandler(getActivity());
         vivanFloraAsyncTask = new VivanFloraAsyncTask(getActivity(), onAsyncTaskInterface);
         vivanFloraAsyncTask.execute(String.valueOf(4), "");
         alProducts.add("Select Product");
@@ -153,8 +161,7 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
                         handleRow();
                     } else
                         Toast.makeText(getActivity(), "Maximum 30 products allowed, please create new quotation", Toast.LENGTH_LONG).show();
-                }
-                else
+                } else
                     Toast.makeText(getActivity(), "Please select product first", Toast.LENGTH_SHORT).show();
             }
         });
@@ -211,17 +218,24 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
     }
 
     private View.OnClickListener onClickListener = new View.OnClickListener() {
+        HashMap<String, Object> hmDataList = new HashMap<>();
+
         @Override
         public void onClick(View v) {
             switch (v.getId()) {
                 case R.id.btn_save_order:
                     //Toast.makeText(getActivity(), "SAVE", Toast.LENGTH_SHORT).show();
-                    vivanFloraAsyncTask = new VivanFloraAsyncTask(getActivity(), onAsyncTaskInterface);
+                    //ArrayList<String> alData = new ArrayList<>(lhmData.get())
+                    if (spinner.getSelectedItemPosition() != 0 && !sCompare.equals("Select Product"))
+                        addDataToList(sCompare);
+
+                    dbh.addDataToTempTable(new DataBaseHelper());
+                    vivanFloraAsyncTask = new VivanFloraAsyncTask(getActivity(), onAsyncTaskInterface, lhmData);
                     vivanFloraAsyncTask.execute(String.valueOf(2), "");
                     break;
                 case R.id.btn_place_order:
                     //Toast.makeText(getActivity(), "PLACE", Toast.LENGTH_SHORT).show();
-                    HashMap<String, Object> hmDataList = new HashMap<>();
+                    hmDataList = new HashMap<>();
                     hmDataList.put("state", ORDER_STATE[2]);
                     vivanFloraAsyncTask = new VivanFloraAsyncTask(getActivity(), onAsyncTaskInterface, hmDataList);
                     vivanFloraAsyncTask.execute(String.valueOf(3), "");
@@ -237,7 +251,7 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
                         hsSelectedProducts.remove(sCompare);
                         alSlNoTextView.remove(tv);
                         tlProducts.removeView(row);
-                        new updateSerialNoAsync().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                        new updateSerialNoAsync().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "1");
                         if (sCompare.equals("Select Product")) {
                             sCompare = "";
                             spinner.setSelection(5);
@@ -253,12 +267,20 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
     };
 
 
-    void addDataToList(String sSpinnerData){
+    void addDataToList(String sSpinnerData) {
         String sTotal = tvTotalAmount.getText().toString().trim();
         String sSubTotal = tvSubTotal.getText().toString().trim();
         ArrayList<String> alData = new ArrayList<>();
-        alData.add(sSpinnerData);
-        alData.add(etQuantity.getText().toString().trim());
+        //alData.add(sSpinnerData);
+        ArrayList<String> alID = new ArrayList<>(lhmProductsData.get(sSpinnerData));
+        alData.add(alID.get(0));
+
+        /*String sQuantity;
+        if(etQuantity.getText().toString().trim().equals(""))
+            sQuantity = "1.0";
+        else*/
+        String sQuantity = etQuantity.getText().toString().trim();
+        alData.add(sQuantity);
         alData.add(tvUnitPrice.getText().toString().trim());
         alData.add(sSubTotal);
         lhmData.put(sSpinnerData, alData);
@@ -266,6 +288,12 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
         double dTotal = Double.valueOf(sTotal);
         double dFinalAmount = dTotal + Double.valueOf(sSubTotal);
         tvTotalAmount.setText(String.valueOf(dFinalAmount));
+
+        spinner.setClickable(false);
+        etQuantity.setEnabled(false);
+        //Spinner spinner = row.findViewById(R.id.spinner_product);
+        /*String s = spinner.getSelectedItem().toString();
+        isProductAlreadyPresent = lhmData.containsKey(s);*/
     }
 
     void handleRow() {
@@ -294,9 +322,12 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
 
             @Override
             public void afterTextChanged(Editable s) {
-                nQuantity = Integer.valueOf(etQuantity.getText().toString().trim());
-                double dTmp = nQuantity * Double.valueOf(tvUnitPrice.getText().toString().trim());
-                tvSubTotal.setText(String.valueOf(dTmp));
+                if (!etQuantity.getText().toString().trim().equals("")) {
+                    nQuantity = Float.valueOf(etQuantity.getText().toString().trim());
+                    float dTmp = nQuantity * Float.valueOf(tvUnitPrice.getText().toString().trim());
+                    tvSubTotal.setText(String.valueOf(dTmp));
+                    //etQuantity.setText(String.valueOf(nQuantity));
+                }
             }
         });
 
@@ -339,17 +370,17 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
                                         ViewGroup parent) {
                 View view = super.getDropDownView(position, convertView, parent);
                 TextView tv = view.findViewById(R.id.tv_products);
-                ImageView iv = view.findViewById(R.id.iv_product_image);
+                //ImageView iv = view.findViewById(R.id.iv_product_image);
                 if (position == 0) {
                     // Set the hint text color gray
                     tv.setTextColor(Color.GRAY);
                 } else {
                     tv.setTextColor(Color.BLACK);
-                    if (alImagePosition.contains(position + 1)) {
+                    /*if (alImagePosition.contains(position + 1)) {
                         ArrayList<String> alImageData = new ArrayList<>(lhmProductsData.get(tv.getText().toString()));
                         Bitmap bitmap = convertToBitmap(alImageData.get(2).substring(3));
                         iv.setImageBitmap(bitmap);
-                    }
+                    }*/
 
                     //if (bitmap != null) {
                 }
@@ -362,6 +393,7 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
         //adapter.setDropDownViewResource(R.layout.spinner_row);
         spinner.setAdapter(adapter);
 
+
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
@@ -372,11 +404,12 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
                     tv.setTextColor(getResources().getColor(R.color.dark_grey));
                     ArrayList<String> alData = new ArrayList<>(lhmProductsData.get(sCompare));
                     tvUnitPrice.setText(alData.get(1));
+                    tvSubTotal.setText(alData.get(1));
                     hsSelectedProducts.add(sCompare);
-
+                    etQuantity.setText("1.0");
                 } else {
-                    if(!sCompare.equals("Select Product"))
-                    tv.setTextColor(getResources().getColor(R.color.light_grey));
+                    if (!sCompare.equals("Select Product"))
+                        tv.setTextColor(getResources().getColor(R.color.light_grey));
                 }
 
                 /*{
@@ -420,9 +453,25 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
 
     @SuppressLint("StaticFieldLeak")
     private class updateSerialNoAsync extends AsyncTask<String, String, String> {
+        int type;
         @Override
         protected String doInBackground(String... params) {
+            type = Integer.parseInt(params[0]);
+            switch (type) {
+                case 1:
+                    //loginTask();
+                    break;
+                case 2:
+                    saveDataToTempDB();
+                    //createOrder();
+                    //updateTask();
+                    break;
+            }
             return null;
+        }
+
+        private void saveDataToTempDB(){
+
         }
 
         @Override
@@ -430,11 +479,22 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
             TextView tv;
             String sText;
 
-            for (int i = 0; i < alSlNoTextView.size(); i++) {
+            switch (type){
+                case 1:
+                    for (int i = 0; i < alSlNoTextView.size(); i++) {
+                        tv = alSlNoTextView.get(i);
+                        sText = String.valueOf(i + 1);
+                        tv.setText(sText);
+                    }
+                    break;
+                case 2:
+                    break;
+            }
+            /*for (int i = 0; i < alSlNoTextView.size(); i++) {
                 tv = alSlNoTextView.get(i);
                 sText = String.valueOf(i + 1);
                 tv.setText(sText);
-            }
+            }*/
         }
     }
 

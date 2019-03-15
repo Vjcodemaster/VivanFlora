@@ -29,6 +29,8 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
     private HashMap<String, Object> hmDataList = new HashMap<>();
     private int nOrderID = 191;
 
+    LinkedHashMap<String, ArrayList<String>> lhmData = new LinkedHashMap<>();
+
     public VivanFloraAsyncTask(Activity aActivity, OnAsyncTaskInterface onAsyncTaskInterface) {
         this.aActivity = aActivity;
         this.onAsyncTaskInterface = onAsyncTaskInterface;
@@ -38,6 +40,13 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
                                HashMap<String, Object> hmDataList) {
         this.aActivity = aActivity;
         this.hmDataList = hmDataList;
+        this.onAsyncTaskInterface = onAsyncTaskInterface;
+    }
+
+    public VivanFloraAsyncTask(Activity aActivity, OnAsyncTaskInterface onAsyncTaskInterface,
+                               LinkedHashMap<String, ArrayList<String>> lhmData) {
+        this.aActivity = aActivity;
+        this.lhmData = lhmData;
         this.onAsyncTaskInterface = onAsyncTaskInterface;
     }
 
@@ -122,7 +131,7 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
         //return isConnected;
     }
 
-    private void createOrder(){
+    private void createOrder() {
         //240
         try {
             OdooConnect oc = OdooConnect.connect(SERVER_URL, PORT_NO, DB_NAME, USER_ID, PASSWORD);
@@ -131,14 +140,21 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
                 //put("state", ORDER_STATE[0]);
             }});
             IDS[0] = createCustomer;
-            createOne2Many(createCustomer);
-        }catch (Exception e){
+            ArrayList<String> alData;
+            ArrayList<String> alKeySet = new ArrayList<>(lhmData.keySet());
+            for (int i=0; i<lhmData.size(); i++){
+                alData = new ArrayList<>(lhmData.get(alKeySet.get(i)));
+                int productID = Integer.valueOf(alData.get(0));
+                float quantity = Float.valueOf(alData.get(1));
+                createOne2Many(productID, quantity,createCustomer);
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
 
-    private void createOne2Many(final int ID) {
+    private void createOne2Many(final int productID, final float quantity, final int ID) {
 
         try {
             OdooConnect oc = OdooConnect.connect(SERVER_URL, PORT_NO, DB_NAME, USER_ID, PASSWORD);
@@ -151,12 +167,30 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
             }});*/
 
             //if (alOne2ManyModelNames.size() >= 1) {
-                @SuppressWarnings("unchecked")
-                Integer one2Many = oc.create("sale.order.line", new HashMap() {{
-                    put("product_id", 113);
-                    put("order_id", ID);
-                }});
+            @SuppressWarnings("unchecked")
+            /*Integer one2Many = oc.create("sale.order.line", new HashMap() {{
+                put("product_id", 113);
+                put("order_id", ID);
+            }});
+            IDS[1] = one2Many;*/
+
+            Integer one2Many = oc.create("sale.order.line", new HashMap() {{
+                put("product_id", productID);
+                //put("product_uom_qty", quantity);
+                put("order_id", ID);
+            }});
+
             IDS[1] = one2Many;
+
+            Boolean idC = oc.write("sale.order.line", new Object[]{one2Many}, new HashMap() {{
+                //put("name", n);
+                //put("phone", p);
+                //put("email", e);
+                put("product_uom_qty", quantity);
+                //put("mobile", "9847794944");
+                //put("name", "product.template");
+                //put("model_id","Audi A3");
+            }});
             //}
 
         } catch (Exception e) {
@@ -166,12 +200,12 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
         //return one2Many;
     }
 
-    private void placeOrder(){
+    private void placeOrder() {
         //240
         try {
             OdooConnect oc = OdooConnect.connect(SERVER_URL, PORT_NO, DB_NAME, USER_ID, PASSWORD);
             Boolean idC = oc.write("sale.order", new Object[]{nOrderID}, hmDataList);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -223,9 +257,9 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
             alData.add(productsData.get(i).get("id").toString());
             //alData.add(data.get(i).get("name").toString());
             alData.add(productsData.get(i).get("list_price").toString());
-            for(int j=0; j< imageData.size(); j++){
+            for (int j = 0; j < imageData.size(); j++) {
                 String base64 = imageData.get(j).get("store_fname").toString();
-                if(imageData.get(j).get("res_name").toString().equals(sName)){
+                if (imageData.get(j).get("res_name").toString().equals(sName)) {
                     alData.add(base64);
                     alPosition.add(i);
                     break;

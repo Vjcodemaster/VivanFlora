@@ -49,9 +49,9 @@
         android:layout_marginBottom="2dp"
         android:background="@android:color/darker_gray"
         android:gravity="center"
-        android:paddingStart="4dp"
-        android:paddingEnd="4dp"
-        android:text="2500000"
+        android:paddingStart="2dp"
+        android:hint="0"
+        android:paddingEnd="2dp"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
     <TextView
@@ -62,7 +62,9 @@
         android:layout_marginBottom="2dp"
         android:background="@android:color/darker_gray"
         android:gravity="center"
-        android:text="2500000"
+        android:hint="0"
+        android:paddingEnd="2dp"
+        android:paddingStart="2dp"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
     <!--<TextView
