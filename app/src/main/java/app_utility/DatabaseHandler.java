@@ -40,6 +40,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     private static final String KEY_SUB_TOTAL = "KEY_SUB_TOTAL";
 
+    private static final String KEY_STATUS = "KEY_STATUS";
+
 
     public DatabaseHandler(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -66,11 +68,12 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         String CREATE_TEMP_PRODUCTS = "CREATE TABLE " + TABLE_TEMP_PRODUCTS + "("
                 + KEY_ID + " INTEGER PRIMARY KEY, "
-                + KEY_PRODUCT_ID + " INTEGER, "
+                + KEY_PRODUCT_ID + " TEXT, "
                 + KEY_PRODUCT_NAME + " TEXT, "
-                + KEY_QUANTITY + " INTEGER, "
-                + KEY_UNIT_PRICE + " INTEGER, "
-                + KEY_SUB_TOTAL + " INTEGER)";
+                + KEY_QUANTITY + " TEXT, "
+                + KEY_UNIT_PRICE + " TEXT, "
+                + KEY_SUB_TOTAL + " TEXT, "
+                + KEY_STATUS + " TEXT)";
         //+ KEY_INDIVIDUAL_PRODUCT_VARIANT_NAMES + " TEXT, "
         //+ KEY_INDIVIDUAL_PRODUCT_VARIANT_IMAGES + " TEXT)";
 
@@ -120,16 +123,17 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         db.close(); // Closing database connection
     }
 
-    public void addDataToTempTable(DataBaseHelper dataBaseHelper) {
+    public void addDataToTempTable(DataBaseHelper dataBaseHelper, String sStatus) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(KEY_ID, dataBaseHelper.get_id());
-        values.put(KEY_PRODUCT_ID, dataBaseHelper.get_product_id());
+        //values.put(KEY_ID, dataBaseHelper.get_id());
+        values.put(KEY_PRODUCT_ID, dataBaseHelper.get_product_id_string());
         values.put(KEY_PRODUCT_NAME, dataBaseHelper.get_product_name());
-        values.put(KEY_QUANTITY, dataBaseHelper.get_product_quantity());
-        values.put(KEY_UNIT_PRICE, dataBaseHelper.get_unit_price());
-        values.put(KEY_SUB_TOTAL, dataBaseHelper.get_sub_total());
+        values.put(KEY_QUANTITY, dataBaseHelper.get_product_quantity_string());
+        values.put(KEY_UNIT_PRICE, dataBaseHelper.get_unit_price_string());
+        values.put(KEY_SUB_TOTAL, dataBaseHelper.get_sub_total_string());
+        values.put(KEY_STATUS, sStatus);
 
         // Inserting Row
         //db.insert(TABLE_RECENT, null, values);
@@ -168,6 +172,43 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         }
         cursor.close();
         return res;
+    }
+
+    public List<DataBaseHelper> getProductsByrStatusFilter(String sKey) {
+        List<DataBaseHelper> dataBaseHelperList = new ArrayList<>();
+        //ArrayList<String> alTechSpecs = new ArrayList<>();
+        // Select All Query
+        //String selectQuery = "SELECT  * FROM " + TABLE_INDIVIDUAL_PRODUCTS;
+        String selectQuery = "SELECT  * FROM " + TABLE_TEMP_PRODUCTS + " WHERE "
+                + KEY_STATUS + "=" + sKey;
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                DataBaseHelper dataBaseHelper = new DataBaseHelper();
+                dataBaseHelper.set_id(Integer.parseInt(cursor.getString(0)));
+                dataBaseHelper.set_product_id_string(cursor.getString(1));
+                dataBaseHelper.set_product_name(cursor.getString(2));
+                dataBaseHelper.set_product_quantity_string(cursor.getString(3));
+                dataBaseHelper.set_unit_price_string(cursor.getString(4));
+                dataBaseHelper.set_sub_total_string(cursor.getString(5));
+                /*dataBaseHelper.set_main_product_id(cursor.getInt(1));
+                dataBaseHelper.set_main_product_names(cursor.getString(2));*/
+                /*dataBaseHelper.set_individual_product_names(cursor.getString(4));
+                dataBaseHelper.set_individual_product_description(cursor.getString(5));
+                dataBaseHelper.set_individual_product_address(cursor.getString(6));
+                dataBaseHelper.set_individual_product_images_path(cursor.getString(7));*/
+                // Adding data to list
+                dataBaseHelperList.add(dataBaseHelper);
+                //String s = String.valueOf(dataBaseHelperList.get(cursor.getPosition()).get_individual_product_names());
+                //alTechSpecs.add(s);
+            } while (cursor.moveToNext());
+        }
+
+        // return recent list
+        return dataBaseHelperList;
     }
 
     /*public List<DataBaseHelper> getAllMainProducts() {

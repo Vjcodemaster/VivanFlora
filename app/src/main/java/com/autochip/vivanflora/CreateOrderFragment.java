@@ -41,8 +41,10 @@ import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Set;
 
+import app_utility.CircularProgressBar;
 import app_utility.DataBaseHelper;
 import app_utility.DatabaseHandler;
+import app_utility.NetworkState;
 import app_utility.OnAsyncTaskInterface;
 import app_utility.OnFragmentInteractionListener;
 import app_utility.VivanFloraAsyncTask;
@@ -104,9 +106,13 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
 
     private String sDate;
 
+    String sStatus;
+
     private TextView tvTotalAmount;
 
     private final Calendar myCalendar = Calendar.getInstance();
+
+    NetworkState networkState;
 
     public CreateOrderFragment() {
         // Required empty public constructor
@@ -139,6 +145,8 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
         dbh = new DatabaseHandler(getActivity());
+        networkState = new NetworkState();
+
         vivanFloraAsyncTask = new VivanFloraAsyncTask(getActivity(), onAsyncTaskInterface);
         vivanFloraAsyncTask.execute(String.valueOf(4), "");
         alProducts.add("Select Product");
@@ -218,27 +226,34 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
     }
 
     private View.OnClickListener onClickListener = new View.OnClickListener() {
-        HashMap<String, Object> hmDataList = new HashMap<>();
+        //HashMap<String, Object> hmDataList = new HashMap<>();
 
         @Override
         public void onClick(View v) {
             switch (v.getId()) {
                 case R.id.btn_save_order:
+                    sStatus = "SAVE";
                     //Toast.makeText(getActivity(), "SAVE", Toast.LENGTH_SHORT).show();
                     //ArrayList<String> alData = new ArrayList<>(lhmData.get())
                     if (spinner.getSelectedItemPosition() != 0 && !sCompare.equals("Select Product"))
                         addDataToList(sCompare);
 
-                    dbh.addDataToTempTable(new DataBaseHelper());
-                    vivanFloraAsyncTask = new VivanFloraAsyncTask(getActivity(), onAsyncTaskInterface, lhmData);
-                    vivanFloraAsyncTask.execute(String.valueOf(2), "");
+                    //dbh.addDataToTempTable(new DataBaseHelper());
+                    new updateSerialNoAsync().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "2");
+                    /*vivanFloraAsyncTask = new VivanFloraAsyncTask(getActivity(), onAsyncTaskInterface, lhmData);
+                    vivanFloraAsyncTask.execute(String.valueOf(2), "");*/
                     break;
                 case R.id.btn_place_order:
+                    sStatus = "PLACE";
                     //Toast.makeText(getActivity(), "PLACE", Toast.LENGTH_SHORT).show();
-                    hmDataList = new HashMap<>();
-                    hmDataList.put("state", ORDER_STATE[2]);
-                    vivanFloraAsyncTask = new VivanFloraAsyncTask(getActivity(), onAsyncTaskInterface, hmDataList);
-                    vivanFloraAsyncTask.execute(String.valueOf(3), "");
+                    //hmDataList = new HashMap<>();
+                    //hmDataList.put("state", ORDER_STATE[2]);
+                    if (networkState.isOnline() && networkState.isNetworkAvailable(getActivity())) {
+                        vivanFloraAsyncTask = new VivanFloraAsyncTask(getActivity(), onAsyncTaskInterface, lhmData);
+                        vivanFloraAsyncTask.execute(String.valueOf(2), "");
+                    } else {
+                        new updateSerialNoAsync().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "2");
+                    }
                     break;
                 case R.id.btn_table_row_delete:
                     if (hsSelectedProducts.size() >= 1) {
@@ -454,6 +469,14 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
     @SuppressLint("StaticFieldLeak")
     private class updateSerialNoAsync extends AsyncTask<String, String, String> {
         int type;
+        private CircularProgressBar circularProgressBar;
+
+        /*@Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            setProgressBar();
+        }*/
+
         @Override
         protected String doInBackground(String... params) {
             type = Integer.parseInt(params[0]);
@@ -462,6 +485,7 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
                     //loginTask();
                     break;
                 case 2:
+                    setProgressBar();
                     saveDataToTempDB();
                     //createOrder();
                     //updateTask();
@@ -470,8 +494,31 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
             return null;
         }
 
-        private void saveDataToTempDB(){
+        private void saveDataToTempDB() {
+            ArrayList<String> alKeySet = new ArrayList<>(lhmData.keySet());
+            ArrayList<String> alData;
+            ArrayList<String> alProductID = new ArrayList<>();
+            ArrayList<String> alProductName = new ArrayList<>();
+            ArrayList<String> alProductQuantity = new ArrayList<>();
+            ArrayList<String> alUnitPrice = new ArrayList<>();
+            ArrayList<String> alSubTotal = new ArrayList<>();
+            for (int i = 0; i < lhmData.size(); i++) {
+                alData = new ArrayList<>(lhmData.get(alKeySet.get(i)));
+                alProductID.add(alData.get(0));
+                alProductName.add(alKeySet.get(i));
+                alProductQuantity.add(alData.get(1));
+                alUnitPrice.add(alData.get(2));
+                alSubTotal.add(alData.get(3));
+                //String productID = Integer.valueOf(alData.get(0));
+            }
+            String sFinalProductID = android.text.TextUtils.join(",", alProductID);
+            String sFinalProductName = android.text.TextUtils.join(",", alProductName);
+            String sFinalProductQuantity = android.text.TextUtils.join(",", alProductQuantity);
+            String sFinalUnitPrice = android.text.TextUtils.join(",", alUnitPrice);
+            String sFinalSubTotal = android.text.TextUtils.join(",", alSubTotal);
 
+            dbh.addDataToTempTable(new DataBaseHelper(sFinalProductID, sFinalProductName, sFinalProductQuantity, sFinalUnitPrice,
+                    sFinalSubTotal), sStatus);
         }
 
         @Override
@@ -479,7 +526,7 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
             TextView tv;
             String sText;
 
-            switch (type){
+            switch (type) {
                 case 1:
                     for (int i = 0; i < alSlNoTextView.size(); i++) {
                         tv = alSlNoTextView.get(i);
@@ -488,6 +535,9 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
                     }
                     break;
                 case 2:
+                    if (circularProgressBar != null && circularProgressBar.isShowing()) {
+                        circularProgressBar.dismiss();
+                    }
                     break;
             }
             /*for (int i = 0; i < alSlNoTextView.size(); i++) {
@@ -496,14 +546,21 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
                 tv.setText(sText);
             }*/
         }
+
+        private void setProgressBar() {
+            circularProgressBar = new CircularProgressBar(getActivity());
+            circularProgressBar.setCanceledOnTouchOutside(false);
+            circularProgressBar.setCancelable(false);
+            circularProgressBar.show();
+        }
     }
 
-    public static Bitmap convertToBitmap(String base64Str) throws IllegalArgumentException {
+    /*public static Bitmap convertToBitmap(String base64Str) throws IllegalArgumentException {
         byte[] decodedString = Base64.decode(base64Str, Base64.DEFAULT);
         return BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-        /*byte[] decodedBytes = Base64.decode(base64Str.substring(base64Str.indexOf(",")  + 1), Base64.DEFAULT
+        *//*byte[] decodedBytes = Base64.decode(base64Str.substring(base64Str.indexOf(",")  + 1), Base64.DEFAULT
         );
-        return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);*/
-    }
+        return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);*//*
+    }*/
 
 }

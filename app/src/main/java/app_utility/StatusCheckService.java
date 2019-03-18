@@ -60,6 +60,7 @@ public class StatusCheckService extends Service {
         Log.e(TAG, "onStartCommand");
         super.onStartCommand(intent, flags, startId);
         alarmReceiver.setAlarm(this);
+
         return START_STICKY;
     }
 

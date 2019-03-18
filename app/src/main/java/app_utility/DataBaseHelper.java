@@ -15,6 +15,11 @@ public class DataBaseHelper {
     private int _unit_price;
     private int _sub_total;
 
+    private String _product_id_string;
+    private String _product_quantity_string;
+    private String _unit_price_string;
+    private String _sub_total_string;
+
 
     // Empty constructor
     public DataBaseHelper() {
@@ -22,13 +27,22 @@ public class DataBaseHelper {
     }
 
 
-    public DataBaseHelper(int _product_id, String _product_name, int _product_quantity, int _unit_price, int _sub_total){
+    public DataBaseHelper(String _product_id_string, String _product_name, String _product_quantity_string, String _unit_price_string, String _sub_total_string){
+        this._product_id_string = _product_id_string;
+        this._product_name = _product_name;
+        this._product_quantity_string = _product_quantity_string;
+        this._unit_price_string = _unit_price_string;
+        this._sub_total_string = _sub_total_string;
+    }
+
+    //temporary db
+    /*public DataBaseHelper(int _product_id, String _product_name, int _product_quantity, int _unit_price, int _sub_total){
         this._product_id = _product_id;
         this._product_name = _product_name;
         this._product_quantity = _product_quantity;
         this._unit_price = _unit_price;
         this._sub_total = _sub_total;
-    }
+    }*/
 
     public DataBaseHelper(int _odoo_id, int _sales_order_id, int _sales_order_line_id, int _product_id,
                           String _product_name, int _product_quantity, int _unit_price, int _sub_total){
@@ -114,5 +128,37 @@ public class DataBaseHelper {
 
     public void set_sub_total(int sub_total) {
         this._sub_total = sub_total;
+    }
+
+    public String get_product_id_string() {
+        return this._product_id_string;
+    }
+
+    public void set_product_id_string(String product_id_string) {
+        this._product_id_string = product_id_string;
+    }
+
+    public String get_product_quantity_string() {
+        return this._product_quantity_string;
+    }
+
+    public void set_product_quantity_string(String product_quantity_string) {
+        this._product_quantity_string = product_quantity_string;
+    }
+
+    public String get_unit_price_string() {
+        return this._unit_price_string;
+    }
+
+    public void set_unit_price_string(String unit_price_string) {
+        this._unit_price_string = unit_price_string;
+    }
+
+    public String get_sub_total_string() {
+        return this._sub_total_string;
+    }
+
+    public void set_sub_total_string(String sub_total_string) {
+        this._sub_total_string = sub_total_string;
     }
 }

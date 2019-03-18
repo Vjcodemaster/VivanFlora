@@ -43,9 +43,9 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
         this.onAsyncTaskInterface = onAsyncTaskInterface;
     }
 
-    public VivanFloraAsyncTask(Activity aActivity, OnAsyncTaskInterface onAsyncTaskInterface,
+    public VivanFloraAsyncTask(Context context, OnAsyncTaskInterface onAsyncTaskInterface,
                                LinkedHashMap<String, ArrayList<String>> lhmData) {
-        this.aActivity = aActivity;
+        this.context = context;
         this.lhmData = lhmData;
         this.onAsyncTaskInterface = onAsyncTaskInterface;
     }
