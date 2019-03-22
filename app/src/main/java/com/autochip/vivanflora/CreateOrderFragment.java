@@ -471,11 +471,11 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
         int type;
         private CircularProgressBar circularProgressBar;
 
-        /*@Override
+        @Override
         protected void onPreExecute() {
             super.onPreExecute();
             setProgressBar();
-        }*/
+        }
 
         @Override
         protected String doInBackground(String... params) {
@@ -485,7 +485,7 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
                     //loginTask();
                     break;
                 case 2:
-                    setProgressBar();
+                    //setProgressBar();
                     saveDataToTempDB();
                     //createOrder();
                     //updateTask();
@@ -516,9 +516,10 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
             String sFinalProductQuantity = android.text.TextUtils.join(",", alProductQuantity);
             String sFinalUnitPrice = android.text.TextUtils.join(",", alUnitPrice);
             String sFinalSubTotal = android.text.TextUtils.join(",", alSubTotal);
+            String sDeliveryDate = tvDate.getText().toString();
 
             dbh.addDataToTempTable(new DataBaseHelper(sFinalProductID, sFinalProductName, sFinalProductQuantity, sFinalUnitPrice,
-                    sFinalSubTotal), sStatus);
+                    sFinalSubTotal, sDeliveryDate, sStatus));
         }
 
         @Override
@@ -535,10 +536,11 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
                     }
                     break;
                 case 2:
-                    if (circularProgressBar != null && circularProgressBar.isShowing()) {
-                        circularProgressBar.dismiss();
-                    }
+
                     break;
+            }
+            if (circularProgressBar != null && circularProgressBar.isShowing()) {
+                circularProgressBar.dismiss();
             }
             /*for (int i = 0; i < alSlNoTextView.size(); i++) {
                 tv = alSlNoTextView.get(i);

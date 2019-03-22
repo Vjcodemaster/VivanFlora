@@ -102,6 +102,9 @@ public class VivanFloraAsyncTask extends AsyncTask<String, Void, String> {
             return;
         }
         switch (type) {
+            case 2:
+                onAsyncTaskInterface.onAsyncTaskComplete("SUBMITTED_PLACED_DATA", type, null, null);
+                break;
             case 4:
                 onAsyncTaskInterface.onAsyncTaskComplete("READ_PRODUCTS", type, lhmProductsWithID, alPosition);
                 break;

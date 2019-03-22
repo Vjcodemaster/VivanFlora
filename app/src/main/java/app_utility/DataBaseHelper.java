@@ -20,6 +20,10 @@ public class DataBaseHelper {
     private String _unit_price_string;
     private String _sub_total_string;
 
+    private String _order_status;
+
+    private String _delivery_date;
+
 
     // Empty constructor
     public DataBaseHelper() {
@@ -27,12 +31,16 @@ public class DataBaseHelper {
     }
 
 
-    public DataBaseHelper(String _product_id_string, String _product_name, String _product_quantity_string, String _unit_price_string, String _sub_total_string){
+    public DataBaseHelper(String _product_id_string, String _product_name, String _product_quantity_string,
+                          String _unit_price_string, String _sub_total_string, String _delivery_date,
+                          String _order_status){
         this._product_id_string = _product_id_string;
         this._product_name = _product_name;
         this._product_quantity_string = _product_quantity_string;
         this._unit_price_string = _unit_price_string;
         this._sub_total_string = _sub_total_string;
+        this._delivery_date = _delivery_date;
+        this._order_status = _order_status;
     }
 
     //temporary db
@@ -160,5 +168,21 @@ public class DataBaseHelper {
 
     public void set_sub_total_string(String sub_total_string) {
         this._sub_total_string = sub_total_string;
+    }
+
+    public String get_order_status() {
+        return this._order_status;
+    }
+
+    public void set_order_status(String order_status) {
+        this._order_status = order_status;
+    }
+
+    public String get_delivery_date() {
+        return this._delivery_date;
+    }
+
+    public void set_delivery_date(String delivery_date) {
+        this._delivery_date = delivery_date;
     }
 }

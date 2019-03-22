@@ -42,6 +42,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     private static final String KEY_STATUS = "KEY_STATUS";
 
+    private static final String KEY_DELIVERY_DATE = "KEY_DELIVERY_DATE";
+
 
     public DatabaseHandler(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -73,6 +75,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 + KEY_QUANTITY + " TEXT, "
                 + KEY_UNIT_PRICE + " TEXT, "
                 + KEY_SUB_TOTAL + " TEXT, "
+                + KEY_DELIVERY_DATE + " TEXT, "
                 + KEY_STATUS + " TEXT)";
         //+ KEY_INDIVIDUAL_PRODUCT_VARIANT_NAMES + " TEXT, "
         //+ KEY_INDIVIDUAL_PRODUCT_VARIANT_IMAGES + " TEXT)";
@@ -123,7 +126,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         db.close(); // Closing database connection
     }
 
-    public void addDataToTempTable(DataBaseHelper dataBaseHelper, String sStatus) {
+    public void addDataToTempTable(DataBaseHelper dataBaseHelper) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -133,7 +136,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_QUANTITY, dataBaseHelper.get_product_quantity_string());
         values.put(KEY_UNIT_PRICE, dataBaseHelper.get_unit_price_string());
         values.put(KEY_SUB_TOTAL, dataBaseHelper.get_sub_total_string());
-        values.put(KEY_STATUS, sStatus);
+        values.put(KEY_DELIVERY_DATE, dataBaseHelper.get_delivery_date());
+        values.put(KEY_STATUS, dataBaseHelper.get_order_status());
 
         // Inserting Row
         //db.insert(TABLE_RECENT, null, values);
@@ -209,6 +213,89 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         // return recent list
         return dataBaseHelperList;
+    }
+
+    public List<DataBaseHelper> getProductsFromTempProducts() {
+        List<DataBaseHelper> dataBaseHelperList = new ArrayList<>();
+        //ArrayList<String> alTechSpecs = new ArrayList<>();
+        // Select All Query
+        //String selectQuery = "SELECT  * FROM " + TABLE_INDIVIDUAL_PRODUCTS;
+        String selectQuery = "SELECT  * FROM " + TABLE_TEMP_PRODUCTS;
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                DataBaseHelper dataBaseHelper = new DataBaseHelper();
+                dataBaseHelper.set_id(Integer.parseInt(cursor.getString(0)));
+                dataBaseHelper.set_product_id_string(cursor.getString(1));
+                dataBaseHelper.set_product_name(cursor.getString(2));
+                dataBaseHelper.set_product_quantity_string(cursor.getString(3));
+                dataBaseHelper.set_unit_price_string(cursor.getString(4));
+                dataBaseHelper.set_sub_total_string(cursor.getString(5));
+                dataBaseHelper.set_delivery_date(cursor.getString(6));
+                dataBaseHelper.set_order_status(cursor.getString(7));
+                /*dataBaseHelper.set_main_product_id(cursor.getInt(1));
+                dataBaseHelper.set_main_product_names(cursor.getString(2));*/
+                /*dataBaseHelper.set_individual_product_names(cursor.getString(4));
+                dataBaseHelper.set_individual_product_description(cursor.getString(5));
+                dataBaseHelper.set_individual_product_address(cursor.getString(6));
+                dataBaseHelper.set_individual_product_images_path(cursor.getString(7));*/
+                // Adding data to list
+                dataBaseHelperList.add(dataBaseHelper);
+                //String s = String.valueOf(dataBaseHelperList.get(cursor.getPosition()).get_individual_product_names());
+                //alTechSpecs.add(s);
+            } while (cursor.moveToNext());
+        }
+
+        // return recent list
+        return dataBaseHelperList;
+    }
+
+    public List<DataBaseHelper> getSingleProductByID(int ID) {
+        List<DataBaseHelper> dataBaseHelperList = new ArrayList<>();
+        //ArrayList<String> alTechSpecs = new ArrayList<>();
+        // Select All Query
+        //String selectQuery = "SELECT  * FROM " + TABLE_INDIVIDUAL_PRODUCTS;
+        String selectQuery = "SELECT  * FROM " + TABLE_TEMP_PRODUCTS + " WHERE " + KEY_ID + "=" + ID;
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                DataBaseHelper dataBaseHelper = new DataBaseHelper();
+                dataBaseHelper.set_id(Integer.parseInt(cursor.getString(0)));
+                dataBaseHelper.set_product_id_string(cursor.getString(1));
+                dataBaseHelper.set_product_name(cursor.getString(2));
+                dataBaseHelper.set_product_quantity_string(cursor.getString(3));
+                dataBaseHelper.set_unit_price_string(cursor.getString(4));
+                dataBaseHelper.set_sub_total_string(cursor.getString(5));
+                dataBaseHelper.set_delivery_date(cursor.getString(6));
+                dataBaseHelper.set_order_status(cursor.getString(7));
+                /*dataBaseHelper.set_main_product_id(cursor.getInt(1));
+                dataBaseHelper.set_main_product_names(cursor.getString(2));*/
+                /*dataBaseHelper.set_individual_product_names(cursor.getString(4));
+                dataBaseHelper.set_individual_product_description(cursor.getString(5));
+                dataBaseHelper.set_individual_product_address(cursor.getString(6));
+                dataBaseHelper.set_individual_product_images_path(cursor.getString(7));*/
+                // Adding data to list
+                dataBaseHelperList.add(dataBaseHelper);
+                //String s = String.valueOf(dataBaseHelperList.get(cursor.getPosition()).get_individual_product_names());
+                //alTechSpecs.add(s);
+            } while (cursor.moveToNext());
+        }
+
+        // return recent list
+        return dataBaseHelperList;
+    }
+
+    public void deleteData(int id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        //db.delete(TABLE_RECENT, KEY_ID + " = ?", new String[] { String.valueOf(recent.getID()) });
+        db.delete(TABLE_TEMP_PRODUCTS, KEY_ID + " = " + id, null);
+        db.close();
     }
 
     /*public List<DataBaseHelper> getAllMainProducts() {

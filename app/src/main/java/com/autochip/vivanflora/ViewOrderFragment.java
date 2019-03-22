@@ -10,9 +10,11 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TableLayout;
@@ -22,11 +24,17 @@ import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 
+import app_utility.DataBaseHelper;
+import app_utility.DatabaseHandler;
+import app_utility.OnAsyncTaskInterface;
 import app_utility.OnFragmentInteractionListener;
+import app_utility.VivanFloraAsyncTask;
 
 
 /**
@@ -37,7 +45,7 @@ import app_utility.OnFragmentInteractionListener;
  * Use the {@link ViewOrderFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class ViewOrderFragment extends Fragment {
+public class ViewOrderFragment extends Fragment implements OnAsyncTaskInterface {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -54,6 +62,11 @@ public class ViewOrderFragment extends Fragment {
     TableRow row;
     TableRow trHeading;
 
+    TextView tvUnitPrice, tvSubTotal;
+    EditText etQuantity;
+
+    private OnAsyncTaskInterface onAsyncTaskInterface;
+
     Button btnPlaceOrder, btnSaveOrder;
     TextView tvDate;
     Button btnDelete;
@@ -61,7 +74,25 @@ public class ViewOrderFragment extends Fragment {
     FloatingActionButton fabCreateOrder;
     ScrollView scrollView;
     Spinner spinner;
+    DatabaseHandler dbh;
+    ArrayList<DataBaseHelper> alDBData;
+
     private final Calendar myCalendar = Calendar.getInstance();
+    int nDBID;
+    ArrayList<String> alProductID;
+    ArrayList<String> alProductName;
+    ArrayList<String> alProductQuantity;
+    ArrayList<String> alUnitPrice;
+    ArrayList<String> alSubTotal;
+    String sDate;
+
+    ArrayAdapter<String> adapter;
+    ArrayList<String> alProducts = new ArrayList<>();
+
+    LinkedHashMap<String, ArrayList<String>> lhmProductsData = new LinkedHashMap<>();
+    LinkedHashMap<String, ArrayList<String>> lhmData = new LinkedHashMap<>();
+    private TextView tvTotalAmount;
+    String sCompare;
 
     public ViewOrderFragment() {
         // Required empty public constructor
@@ -92,6 +123,17 @@ public class ViewOrderFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        onAsyncTaskInterface = this;
+        dbh = new DatabaseHandler(getActivity());
+        alDBData = new ArrayList<>(dbh.getSingleProductByID(Integer.valueOf(mParam1)));
+
+        nDBID = alDBData.get(0).get_id();
+        alProductID = new ArrayList<>(Arrays.asList(alDBData.get(0).get_product_id_string().split(",")));
+        alProductName = new ArrayList<>(Arrays.asList(alDBData.get(0).get_product_name().split(",")));
+        alProductQuantity = new ArrayList<>(Arrays.asList(alDBData.get(0).get_product_quantity_string().split(",")));
+        alUnitPrice = new ArrayList<>(Arrays.asList(alDBData.get(0).get_unit_price_string().split(",")));
+        alSubTotal = new ArrayList<>(Arrays.asList(alDBData.get(0).get_sub_total_string().split(",")));
+        sDate = alDBData.get(0).get_delivery_date();
     }
 
     @Override
@@ -100,24 +142,139 @@ public class ViewOrderFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_view_order, container, false);
         init(view, inflater);
+
+        VivanFloraAsyncTask vivanFloraAsyncTask = new VivanFloraAsyncTask(getActivity(), onAsyncTaskInterface);
+        vivanFloraAsyncTask.execute(String.valueOf(4), "");
+        alProducts.add("Select Product");
+
+        for (int i=0; i<alProductID.size();i++){
+            addDataToRowFromList(i);
+        }
+        tvDate.setText(sDate);
         handleRow();
 
         fabCreateOrder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (alSlNoTextView.size() != 30) {
-                    handleRow();
+                if (spinner.getSelectedItemPosition() != 0 && !sCompare.equals("Select Product")) {
+                    addDataToList(sCompare);
+                    if (alSlNoTextView.size() != 30) {
+                        handleRow();
+                    } else
+                        Toast.makeText(getActivity(), "Maximum 30 products allowed, please create new quotation", Toast.LENGTH_LONG).show();
                 } else
-                    Toast.makeText(getActivity(), "Maximum 30 products allowed, please create new quotation", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(), "Please select product first", Toast.LENGTH_SHORT).show();
             }
         });
         return view;
+    }
+
+    void addDataToList(String sSpinnerData) {
+        String sTotal = tvTotalAmount.getText().toString().trim();
+        String sSubTotal = tvSubTotal.getText().toString().trim();
+        ArrayList<String> alData = new ArrayList<>();
+        //alData.add(sSpinnerData);
+        ArrayList<String> alID = new ArrayList<>(lhmProductsData.get(sSpinnerData));
+        alData.add(alID.get(0));
+
+        /*String sQuantity;
+        if(etQuantity.getText().toString().trim().equals(""))
+            sQuantity = "1.0";
+        else*/
+        String sQuantity = etQuantity.getText().toString().trim();
+        alData.add(sQuantity);
+        alData.add(tvUnitPrice.getText().toString().trim());
+        alData.add(sSubTotal);
+        lhmData.put(sSpinnerData, alData);
+        //lhsData.add(alData);
+        double dTotal = Double.valueOf(sTotal);
+        double dFinalAmount = dTotal + Double.valueOf(sSubTotal);
+        tvTotalAmount.setText(String.valueOf(dFinalAmount));
+
+        spinner.setClickable(false);
+        etQuantity.setEnabled(false);
+        //Spinner spinner = row.findViewById(R.id.spinner_product);
+        /*String s = spinner.getSelectedItem().toString();
+        isProductAlreadyPresent = lhmData.containsKey(s);*/
+    }
+    void addDataToRowFromList(int i){
+        row = (TableRow) getLayoutInflater().inflate(R.layout.table_row, null);
+        btnDelete = row.findViewById(R.id.btn_table_row_delete);
+        if (tlProducts.getChildCount() == 0)
+            tlProducts.addView(trHeading, 0);
+
+        TextView tvSlNo = row.findViewById(R.id.tv_sl_no_value);
+        //alSlNoTextView.add(tvSlNo);
+        tvSlNo.setText(String.valueOf(i+1));
+
+        spinner = row.findViewById(R.id.spinner_product);
+
+        adapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_row, R.id.tv_products, alProductName); //android.R.layout.simple_spinner_item
+        spinner.setAdapter(adapter);
+
+        spinner.setSelection(i);
+
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                TextView tv = view.findViewById(R.id.tv_products);
+
+                sCompare = spinner.getSelectedItem().toString();
+                if (spinner.getSelectedItemPosition() != 0) {
+                    tv.setTextColor(getResources().getColor(R.color.dark_grey));
+                    ArrayList<String> alData = new ArrayList<>(lhmProductsData.get(sCompare));
+                    tvUnitPrice.setText(alData.get(1));
+                    tvSubTotal.setText(alData.get(1));
+                    //hsSelectedProducts.add(sCompare);
+                    etQuantity.setText("1.0");
+                } else {
+                    if (!sCompare.equals("Select Product"))
+                        tv.setTextColor(getResources().getColor(R.color.light_grey));
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        EditText etQuantity = row.findViewById(R.id.et_quantity);
+        etQuantity.setText(alProductQuantity.get(i));
+
+        TextView tvUnitPrice = row.findViewById(R.id.tv_unit_price_value);
+        tvUnitPrice.setText(alUnitPrice.get(i));
+
+        TextView tvSubTotal = row.findViewById(R.id.tv_sub_total_value);
+        tvSubTotal.setText(alSubTotal.get(i));
+
+        tlProducts.addView(row);
+
+
+        /*if (alSlNoTextView.size() > 10)
+            scrollView.fullScroll(View.FOCUS_DOWN);
+
+        btnDelete = row.findViewById(R.id.btn_table_row_delete);
+        btnDelete.setTag(String.valueOf(i+1));
+        btnDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                row = (TableRow) view.getParent();
+                TextView tv = row.findViewById(R.id.tv_sl_no_value);
+                alSlNoTextView.remove(tv);
+                tlProducts.removeView(row);
+                new updateSerialNoAsync().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
+        });*/
+
+
     }
 
     void init(View view, LayoutInflater inflater) {
         //rows = new TableRow[10];
         //baButtonDelete = new Button[10];
         tvDate = view.findViewById(R.id.tv_date);
+        tvTotalAmount = view.findViewById(R.id.tv_total_amount);
         Date date = new Date();
         String modifiedDate= new SimpleDateFormat("dd-MM-yyyy", Locale.US).format(date);
         tvDate.setText(modifiedDate);
@@ -163,6 +320,9 @@ public class ViewOrderFragment extends Fragment {
         if (tlProducts.getChildCount() == 0)
             tlProducts.addView(trHeading, 0);
 
+        etQuantity = row.findViewById(R.id.et_quantity);
+        tvUnitPrice = row.findViewById(R.id.tv_unit_price_value);
+        tvSubTotal = row.findViewById(R.id.tv_sub_total_value);
         TextView tvSlNo = row.findViewById(R.id.tv_sl_no_value);
         alSlNoTextView.add(tvSlNo);
         tvSlNo.setText(String.valueOf(alSlNoTextView.size()));
@@ -172,7 +332,7 @@ public class ViewOrderFragment extends Fragment {
             scrollView.fullScroll(View.FOCUS_DOWN);
 
         btnDelete = row.findViewById(R.id.btn_table_row_delete);
-        btnDelete.setTag(alSlNoTextView.size());
+
         btnDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -183,16 +343,53 @@ public class ViewOrderFragment extends Fragment {
                 new updateSerialNoAsync().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }
         });
-        ArrayList<String> alMake = new ArrayList<>();
+        /*ArrayList<String> alMake = new ArrayList<>();
         alMake.add("Gerbera");
         alMake.add("Red Rose");
         alMake.add("Sun flower");
-        alMake.add("Casa Blanca");
+        alMake.add("Casa Blanca");*/
         spinner = row.findViewById(R.id.spinner_product);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_row, R.id.tv_products, alMake); //android.R.layout.simple_spinner_item
+        adapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_row, R.id.tv_products, alProducts); //android.R.layout.simple_spinner_item
         //adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
         spinner.setAdapter(adapter);
+
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                TextView tv = view.findViewById(R.id.tv_products);
+
+                sCompare = spinner.getSelectedItem().toString();
+                if (spinner.getSelectedItemPosition() != 0) {
+                    tv.setTextColor(getResources().getColor(R.color.dark_grey));
+                    ArrayList<String> alData = new ArrayList<>(lhmProductsData.get(sCompare));
+                    tvUnitPrice.setText(alData.get(1));
+                    tvSubTotal.setText(alData.get(1));
+                    //hsSelectedProducts.add(sCompare);
+                    etQuantity.setText("1.0");
+                } else {
+                    if (!sCompare.equals("Select Product"))
+                        tv.setTextColor(getResources().getColor(R.color.light_grey));
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
         //new updateSerialNoAsync().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    @Override
+    public void onAsyncTaskComplete(String sCase, int nFlag, LinkedHashMap<String, ArrayList<String>> lhmData, ArrayList<Integer> alImagePosition) {
+        switch (nFlag) {
+            case 4:
+                alProducts.addAll(lhmData.keySet());
+                spinner.setAdapter(adapter);
+                this.lhmProductsData = lhmData;
+                //this.alImagePosition = alImagePosition;
+                break;
+        }
     }
 
 

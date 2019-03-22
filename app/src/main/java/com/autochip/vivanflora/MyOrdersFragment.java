@@ -11,6 +11,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+
+import app_utility.DataBaseHelper;
+import app_utility.DatabaseHandler;
 import app_utility.OnFragmentInteractionListener;
 
 
@@ -34,6 +41,10 @@ public class MyOrdersFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
 
     private FloatingActionButton fabCreateOrder;
+
+    ArrayList<DataBaseHelper> alDBData;
+    DatabaseHandler dbh;
+    RecyclerView recyclerView;
 
     public MyOrdersFragment() {
         // Required empty public constructor
@@ -63,7 +74,8 @@ public class MyOrdersFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-        myOrdersRVAdapter = new MyOrdersRVAdapter(getActivity(), getActivity().getSupportFragmentManager(), mListener);
+        //myOrdersRVAdapter = new MyOrdersRVAdapter(getActivity(), getActivity().getSupportFragmentManager(), mListener);
+        dbh = new DatabaseHandler(getActivity());
     }
 
     @Override
@@ -71,13 +83,13 @@ public class MyOrdersFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_my_orders, container, false);
-        RecyclerView recyclerView = view.findViewById(R.id.rv_my_orders);
+        recyclerView = view.findViewById(R.id.rv_my_orders);
         LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(getActivity());
         mLinearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(mLinearLayoutManager);
         recyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL));
         recyclerView.setHasFixedSize(true);
-        recyclerView.setAdapter(myOrdersRVAdapter);
+        //recyclerView.setAdapter(myOrdersRVAdapter);
         init(view);
         return view;
     }
@@ -100,6 +112,41 @@ public class MyOrdersFragment extends Fragment {
                 HomeScreenActivity.onFragmentInteractionListener.onFragmentMessage("MY_ORDER_FAB_CLICK", 0);
             }
         });
+        alDBData = new ArrayList<>(dbh.getProductsFromTempProducts());
+
+        LinkedHashMap<Integer, HashMap<String, String>> lhmMyOrdersData = new LinkedHashMap<>();
+        for (int i=0; i<alDBData.size(); i++){
+            int nID = alDBData.get(i).get_id();
+            int nNumberOfProducts = Arrays.asList(alDBData.get(i).get_product_id_string().split(",")).size();
+            String sDate = alDBData.get(i).get_delivery_date();
+            ArrayList<String> sSubTotal =  new ArrayList<>(Arrays.asList(alDBData.get(i).get_sub_total_string().split(",")));
+
+            double dTotal = 0.00;
+            for (int j=0; j<sSubTotal.size(); j++){
+                dTotal = dTotal + Double.valueOf(sSubTotal.get(j));
+            }
+            String sOrderStatus = alDBData.get(i).get_order_status();
+            HashMap<String, String> hmKeyValue = new HashMap<>();
+            hmKeyValue.put("number_of_products", String.valueOf(nNumberOfProducts));
+            hmKeyValue.put("date", sDate);
+            hmKeyValue.put("total", String.valueOf(dTotal));
+            hmKeyValue.put("status", sOrderStatus);
+            lhmMyOrdersData.put(nID, hmKeyValue);
+        }
+
+        myOrdersRVAdapter = new MyOrdersRVAdapter(getActivity(), getActivity().getSupportFragmentManager(), mListener, lhmMyOrdersData);
+        recyclerView.setAdapter(myOrdersRVAdapter);
+        /*int nID = alDBData.get(0).get_id();
+        int nNumberOfProducts = Arrays.asList(alDBData.get(0).get_product_id_string().split(",")).size();
+        String sDate = alDBData.get(0).get_delivery_date();
+        ArrayList<String> sSubTotal =  new ArrayList<>(Arrays.asList(alDBData.get(0).get_sub_total_string().split(",")));
+
+        double dTotal = 0.00;
+        for (int i=0; i<sSubTotal.size(); i++){
+            dTotal = dTotal + Double.valueOf(sSubTotal.get(i));
+        }
+        String sOrderStatus = alDBData.get(0).get_order_status();*/
+        //ArrayList<String> alProductID = new ArrayList<>(Arrays.asList(alDBData.get(0).get_product_id_string().split(",")));
     }
 
     @Override

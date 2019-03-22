@@ -52,6 +52,8 @@ public class OfflineTransferService extends Service implements OnAsyncTaskInterf
 
     //BELAsyncTask belAsyncTask;
     DatabaseHandler db;
+
+    private int nDBID;
     ArrayList<DataBaseHelper> alDBTemporaryData;
     LinkedHashMap<String, ArrayList<String>> lhmData = new LinkedHashMap<>();
 
@@ -90,24 +92,46 @@ public class OfflineTransferService extends Service implements OnAsyncTaskInterf
                 handler.post(new Runnable() {
                     public void run() {
                         ArrayList<DataBaseHelper> alDBData = new ArrayList<>(db.getProductsByrStatusFilter("PLACE"));
-                        if(alDBData.size()>0){
+                        if(alDBData.size()>0 && VOLLEY_STATUS.equals("RUNNING")){
                             for (int i=0;i<alDBData.size(); i++){
+                                nDBID = alDBData.get(i).get_id();
                                 ArrayList<String> alProductID = new ArrayList<>(Arrays.asList(alDBData.get(i).get_product_id_string().split(",")));
                                 ArrayList<String> alProductName = new ArrayList<>(Arrays.asList(alDBData.get(i).get_product_name().split(",")));
                                 ArrayList<String> alProductQuantity = new ArrayList<>(Arrays.asList(alDBData.get(i).get_product_quantity_string().split(",")));
                                 ArrayList<String> alUnitPrice = new ArrayList<>(Arrays.asList(alDBData.get(i).get_unit_price_string().split(",")));
                                 ArrayList<String> alSubTotal = new ArrayList<>(Arrays.asList(alDBData.get(i).get_sub_total_string().split(",")));
 
-                                ArrayList<String> alData = new ArrayList<>();
-                                alData.add(alProductID.get(i));
-                                alData.add(alProductQuantity.get(i));
-                                alData.add(alUnitPrice.get(i));
-                                alData.add(alSubTotal.get(i));
+                                for (int j=0;j<alProductID.size();j++){
+                                    ArrayList<String> alData = new ArrayList<>();
+                                    alData.add(alProductID.get(j));
+                                    alData.add(alProductQuantity.get(j));
+                                    alData.add(alUnitPrice.get(j));
+                                    alData.add(alSubTotal.get(j));
+                                    lhmData.put(alProductName.get(j), alData);
+                                }
 
-                                lhmData.put(alProductName.get(i), alData);
                                 VivanFloraAsyncTask vivanFloraAsyncTask = new VivanFloraAsyncTask(getApplicationContext(), onAsyncInterfaceListener, lhmData);
                                 vivanFloraAsyncTask.execute(String.valueOf(2), "");
+                                VOLLEY_STATUS = "RUNNING";
                             }
+
+                                /*nDBID = alDBData.get(0).get_id();
+                                String sProductID = alDBData.get(0).get_product_id_string().split(",")[0];
+                                String sProductName = alDBData.get(0).get_product_name().split(",")[0];
+                                String sProductQuantity = alDBData.get(0).get_product_quantity_string().split(",")[0];
+                                String sProductUnitPrice = alDBData.get(0).get_unit_price_string().split(",")[0];
+                                String sSubTotal = alDBData.get(0).get_sub_total_string().split(",")[0];
+
+                                ArrayList<String> alData = new ArrayList<>();
+                                alData.add(sProductID);
+                                alData.add(sProductQuantity);
+                                alData.add(sProductUnitPrice);
+                                alData.add(sSubTotal);
+
+                                lhmData.put(sProductName, alData);
+                                VivanFloraAsyncTask vivanFloraAsyncTask = new VivanFloraAsyncTask(getApplicationContext(), onAsyncInterfaceListener, lhmData);
+                                vivanFloraAsyncTask.execute(String.valueOf(2), "");
+                                VOLLEY_STATUS = "RUNNING";*/
 
                         }
                         /*if (sharedPreferencesClass.getUserOdooID() == StaticReferenceClass.DEFAULT_ODOO_ID) {
@@ -246,7 +270,9 @@ public class OfflineTransferService extends Service implements OnAsyncTaskInterf
     @Override
     public void onAsyncTaskComplete(String sCase, int nFlag, LinkedHashMap<String, ArrayList<String>> lhmData, ArrayList<Integer> alImagePosition) {
         switch (sCase) {
-            case "ODOO_ID_RETRIEVED":
+            case "SUBMITTED_PLACED_DATA":
+                db.deleteData(nDBID);
+                VOLLEY_STATUS= "NOT_RUNNING";
                 /*if (type != StaticReferenceClass.DEFAULT_ODOO_ID) {
                     sharedPreferencesClass.setUserOdooID(type);
                 }*/
