@@ -136,17 +136,6 @@ public class MyOrdersFragment extends Fragment {
 
         myOrdersRVAdapter = new MyOrdersRVAdapter(getActivity(), getActivity().getSupportFragmentManager(), mListener, lhmMyOrdersData);
         recyclerView.setAdapter(myOrdersRVAdapter);
-        /*int nID = alDBData.get(0).get_id();
-        int nNumberOfProducts = Arrays.asList(alDBData.get(0).get_product_id_string().split(",")).size();
-        String sDate = alDBData.get(0).get_delivery_date();
-        ArrayList<String> sSubTotal =  new ArrayList<>(Arrays.asList(alDBData.get(0).get_sub_total_string().split(",")));
-
-        double dTotal = 0.00;
-        for (int i=0; i<sSubTotal.size(); i++){
-            dTotal = dTotal + Double.valueOf(sSubTotal.get(i));
-        }
-        String sOrderStatus = alDBData.get(0).get_order_status();*/
-        //ArrayList<String> alProductID = new ArrayList<>(Arrays.asList(alDBData.get(0).get_product_id_string().split(",")));
     }
 
     @Override

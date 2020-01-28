@@ -3,8 +3,6 @@ package com.autochip.vivanflora;
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -12,7 +10,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +18,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TableLayout;
@@ -29,12 +25,10 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -48,8 +42,6 @@ import app_utility.NetworkState;
 import app_utility.OnAsyncTaskInterface;
 import app_utility.OnFragmentInteractionListener;
 import app_utility.VivanFloraAsyncTask;
-
-import static app_utility.StaticReferenceClass.ORDER_STATE;
 
 
 /**
@@ -147,9 +139,14 @@ public class CreateOrderFragment extends Fragment implements OnAsyncTaskInterfac
         dbh = new DatabaseHandler(getActivity());
         networkState = new NetworkState();
 
-        vivanFloraAsyncTask = new VivanFloraAsyncTask(getActivity(), onAsyncTaskInterface);
-        vivanFloraAsyncTask.execute(String.valueOf(4), "");
         alProducts.add("Select Product");
+        alProducts.add("Product A");
+        alProducts.add("Product B");
+        alProducts.add("Product C");
+        alProducts.add("Product D");
+        /*vivanFloraAsyncTask = new VivanFloraAsyncTask(getActivity(), onAsyncTaskInterface);
+        vivanFloraAsyncTask.execute(String.valueOf(4), "");
+        alProducts.add("Select Product");*/
     }
 
     @Override

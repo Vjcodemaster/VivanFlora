@@ -140,7 +140,6 @@ public class HomeScreenActivity extends AppCompatActivity implements OnFragmentI
                 tvTitle.setText(R.string.app_name);
                 break;
         }
-
     }
 
     /*
